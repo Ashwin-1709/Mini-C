@@ -1,4 +1,4 @@
-1. Keywords - int, float, char, if, for, while, switch, printf, scanf, return
+1. Keywords - int, float, char, if, for, while, switch, printf, scanf, return, break, continue, main, void, else, else if
 2. Operators - +, -, *, /, %, ^, &, |, &&, ||, =, ==, !, <, >, ?, ~, :
 3. del - 
     \n
