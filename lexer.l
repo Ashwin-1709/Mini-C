@@ -37,67 +37,67 @@ WS  [ \t\v\n\f]
 "/*"(.|\n|\s)*"*/"                                 {/*comment();*/ }
 "//".*                                    { /* consume //-comment */ }
 
-"break"					{ printf("BREAK\n"); }
-"case"					{ printf("CASE\n"); }
-"char"					{ printf("CHAR\n"); }
-"continue"				{ printf("CONTINUE\n"); }
-"default"				{ printf("DEFAULT\n"); }
-"double"				{ printf("DOUBLE\n"); }
-"else"					{ printf("ELSE\n"); }
-"float"					{ printf("FLOAT\n"); }
-"for"					{ printf("FOR\n"); }
-"if"					{ printf("IF\n"); }
-"int"					{ printf("INT\n"); }
-"long"					{ printf("LONG\n"); }
-"return"				{ printf("RETURN\n"); }
-"short"					{ printf("SHORT\n"); }
-"switch"				{ printf("SWITCH\n"); }
-"void"					{ printf("VOID\n"); }
-"while"					{ printf("WHILE\n"); }
+"break"					{ return BREAK; }
+"case"					{ return CASE; }
+"char"					{ return CHAR; }
+"continue"				{ return CONTINUE; }
+"default"				{ return DEFAULT; }
+"double"				{ return DOUBLE; }
+"else"					{ return ELSE; }
+"float"					{ return FLOAT; }
+"for"					{ return FOR; }
+"if"					{ return IF; }
+"int"					{ return INT; }
+"long"					{ return LONG; }
+"return"				{ return RETURN; }
+"short"					{ return SHORT; }
+"switch"				{ return SWITCH; }
+"void"					{ return VOID; }
+"while"					{ return WHILE; }
 
-{L}{A}*					{ printf("IDENTIFIER\n"); /*TODO: check_type() */}
+{L}{A}*					{ return IDENTIFIER; /*TODO: check_type() */}
 
-{HP}{H}+{IS}?				{ printf("I_CONSTANT\n"); }
-{NZ}{D}*{IS}?				{ printf("I_CONSTANT\n"); }
-"0"{O}*{IS}?				{ printf("I_CONSTANT\n"); }
-{CP}?"'"([^'\\\n]|{ES})+"'"		{ printf("I_CONSTANT\n"); }
+{HP}{H}+{IS}?				{ return I_CONSTANT; }
+{NZ}{D}*{IS}?				{ return I_CONSTANT; }
+"0"{O}*{IS}?				{ return I_CONSTANT; }
+{CP}?"'"([^'\\\n]|{ES})+"'"		{ return I_CONSTANT; }
 
-{D}+{E}{FS}?				{ printf("F_CONSTANT\n"); }
-{D}*"."{D}+{E}?{FS}?			{ printf("F_CONSTANT\n"); }
-{D}+"."{E}?{FS}?			{ printf("F_CONSTANT\n"); }
-{HP}{H}+{P}{FS}?			{ printf("F_CONSTANT\n"); }
-{HP}{H}*"."{H}+{P}{FS}?			{ printf("F_CONSTANT\n"); }
-{HP}{H}+"."{P}{FS}?			{ printf("F_CONSTANT\n"); }
+{D}+{E}{FS}?				{ return F_CONSTANT; }
+{D}*"."{D}+{E}?{FS}?			{ return F_CONSTANT; }
+{D}+"."{E}?{FS}?			{ return F_CONSTANT; }
+{HP}{H}+{P}{FS}?			{ return F_CONSTANT; }
+{HP}{H}*"."{H}+{P}{FS}?			{ return F_CONSTANT; }
+{HP}{H}+"."{P}{FS}?			{ return F_CONSTANT; }
 
-({SP}?\"([^"\\\n]|{ES})*\"{WS}*)+	{ printf("STRING_LITERAL\n"); }
+({SP}?\"([^"\\\n]|{ES})*\"{WS}*)+	{ return STRING_LITERAL; }
 
-"&&"					{ printf("AND_OP\n"); }
-"||"					{ printf("OR_OP\n"); }
-"<="					{ printf("LE_OP\n"); }
-">="					{ printf("GE_OP\n"); }
-"=="					{ printf("EQ_OP\n"); }
-"!="					{ printf("NE_OP\n"); }
-";"					{ printf(";\n"); }
-"{"     				{ printf("{\n"); }
-"}"     				{ printf("}\n"); }
-","					{ printf(",\n"); }
-"="					{ printf("=\n"); }
-"("					{ printf("(\n"); }
-")"					{ printf(")\n"); }
-"["     				{ printf("[\n"); }
-"]"     				{ printf("]\n"); }
-"."					{ printf(".\n"); }
-"!"					{ printf("!\n"); }
-"-"					{ printf("-\n"); }
-"+"					{ printf("+\n"); }
-"*"					{ printf("*\n"); }
-"/"					{ printf("/\n"); }
-"%"					{ printf("%\n"); }
-"<"					{ printf("<\n"); }
-">"					{ printf(">\n"); }
+"&&"					{ return AND_OP; }
+"||"					{ return OR_OP; }
+"<="					{ return LE_OP; }
+">="					{ return GE_OP; }
+"=="					{ return EQ_OP; }
+"!="					{ return NE_OP; }
+";"					{ return ';'; }
+"{"     				{ return '{'; }
+"}"     				{ return '}'; }
+","					{ return ','; }
+"="					{ return '='; }
+"("					{ return '('; }
+")"					{ return ')'; }
+"["     				{ return '['; }
+"]"     				{ return ']'; }
+"."					{ return '.'; }
+"!"					{ return '!'; }
+"-"					{ return '-'; }
+"+"					{ return '+'; }
+"*"					{ return '*'; }
+"/"					{ return '/'; }
+"%"					{ return '%'; }
+"<"					{ return '<'; }
+">"					{ return '>'; }
 
 {WS}+					{ /* whitespace separates tokens */ }
-.					{ printf("ERROR\n"); }
+.					{ return ERROR; }
 
 %%
 
