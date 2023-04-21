@@ -1,7 +1,8 @@
 int main() {
-    for (int i = 1; i < 10; i=i+1) {
-    }
-    int abc;
+    int x = 1;
+    /* hello sasasas
+     * hi
+     */
     printf("Hello World");
 
     return 0;

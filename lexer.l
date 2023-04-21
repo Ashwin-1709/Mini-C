@@ -1,7 +1,6 @@
 %{
 #include <stdio.h>
 
-//extern void yyerror(const char *);  /* prints grammar violation message */
 
 extern int sym_type(const char *);  /* returns type from symbol table */
 
@@ -34,9 +33,8 @@ SP  (u8|u|U|L)
 ES  (\\(['"\?\\abfnrtv]|[0-7]{1,3}|x[a-fA-F0-9]+))
 WS  [ \t\v\n\f]
 
-
 %%
-"/*"                                    { /*comment();*/ }
+"/*"(.|\n|\s)*"*/"                                 {/*comment();*/ }
 "//".*                                    { /* consume //-comment */ }
 
 "break"					{ printf("BREAK\n"); }
