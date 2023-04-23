@@ -3,8 +3,15 @@
 #include <stdlib.h>
 %}
 
+%union {
+    int iconst;
+    float dconst;
+}
+
 %token BREAK CASE CHAR CONTINUE DEFAULT ELSE FLOAT FOR IF RETURN INT SWITCH VOID WHILE MAIN_FUNCTION
-%token IDENTIFIER I_CONSTANT F_CONSTANT STRING_LITERAL
+%token IDENTIFIER STRING_LITERAL
+%token<iconst>I_CONSTANT 
+%token<dconst>F_CONSTANT
 %token AND_OP OR_OP LE_OP GE_OP EQ_OP NE_OP EQUAL_SIGN
 %token SEMICOLON LEFT_CURLY RIGHT_CURLY COMMA COLON LEFT_ROUND RIGHT_ROUND LEFT_SQUARE RIGHT_SQUARE DOT
 %token AMPERSAND EXCLAMATION HYPHEN PLUS STAR SLASH LT_OP GT_OP PERCENT
@@ -75,32 +82,32 @@ return_statement : RETURN expr
 ;
 /* Expression */
 expr : SEMICOLON 
-        | expression_statement SEMICOLON 
+        | expression_statement SEMICOLON  {printf("---parsed expression----\n");}
         | expr COMMA expr SEMICOLON
       
 ;
-expression_statement : expression_statement OR_OP expression_statement | 
-				       expression_statement AND_OP expression_statement |
-				       expression_statement GT_OP expression_statement  |
-			           expression_statement LT_OP expression_statement |
-				       expression_statement GE_OP expression_statement |
-				       expression_statement LE_OP expression_statement | 
-				       expression_statement PLUS expression_statement |
-				       expression_statement HYPHEN expression_statement |
-				       expression_statement STAR expression_statement |
-				       expression_statement SLASH expression_statement |
-				       expression_statement PERCENT expression_statement |
-                       expression_statement EQ_OP expression_statement |
-                       expression_statement NE_OP expression_statement |
-				       unary_expr |
+expression_statement : expression_statement OR_OP expression_statement {printf("expr || expr parsed\n");}| 
+				       expression_statement AND_OP expression_statement {printf("expr && expr parsed\n");}|
+				       expression_statement GT_OP expression_statement  {printf("expr > expr parsed\n");}|
+			           expression_statement LT_OP expression_statement {printf("expr < expr parsed\n");}|
+				       expression_statement GE_OP expression_statement {printf("expr >= expr parsed\n");}|
+				       expression_statement LE_OP expression_statement {printf("expr <= expr parsed\n");}| 
+				       expression_statement PLUS expression_statement {printf("expr + expr parsed\n");}|
+				       expression_statement HYPHEN expression_statement {printf("expr - expr parsed\n");}|
+				       expression_statement STAR expression_statement {printf("expr * expr parsed\n");}|
+				       expression_statement SLASH expression_statement {printf("expr / expr parsed\n");}|
+				       expression_statement PERCENT expression_statement {printf("expr mod expr parsed\n");}|
+                       expression_statement EQ_OP expression_statement {printf("expr == expr parsed\n");}|
+                       expression_statement NE_OP expression_statement {printf("expr != expr parsed\n");}|
+				       unary_expr {printf("unary parsed\n");}|
                        assignment_statement |
 				       functional_call |
 				       LEFT_ROUND expression_statement RIGHT_ROUND |
 				        I_CONSTANT | F_CONSTANT | STRING_LITERAL | arr_element | IDENTIFIER
 ;
 
-unary_expr : EXCLAMATION expression_statement %prec EXCLAMATION
-            | HYPHEN expression_statement %prec HYPHEN
+unary_expr : EXCLAMATION expression_statement %prec EXCLAMATION {printf("!(expr) parsed\n");}
+            | HYPHEN expression_statement %prec HYPHEN {printf("-(expr) parsed\n");}
 ;
 
 functional_call : IDENTIFIER LEFT_ROUND RIGHT_ROUND 

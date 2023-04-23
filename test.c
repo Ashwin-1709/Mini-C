@@ -25,6 +25,15 @@ int main() {
     int testInteger = 5;
     printf("Number = %d", testInteger);
 
+    // (a + b) * c / d;
+    // ((a + b) * c) / d;
+    // a + b * c / d;
+    // a + b - c + d;
+    // a + (b - c) + d;
+    // -(2 + 4) + 6;
+    // (F(0) || T(1) && F(2)  || F(3)  && ! F(4));
+    // (F(0) || T(1) && F(2)  || F(3)  && ! F(4) >= 10 );
+    // a = (a - b > 6 + d <= 2);
     switch(x * 5) {
         case 2 + 3 : 
             int cur = 0;
@@ -40,13 +49,13 @@ int main() {
         if(x * 3)
             x = x + 1;
         else {
-            x = x - 1;
-            float f = 1e-4;
+    //         x = x - 1;
+    //         float f = 1e-4;
         }
         if(1);
-        else a[2][2] = a[2][2] && a[1][1];
+        else a[2][2] = ((a[2][2] && a[1][1]) || 1);
     }
     while(cur < 10)
         cur = cur - 2;
     return 0;
-}
+}   

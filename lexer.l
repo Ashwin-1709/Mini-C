@@ -1,11 +1,14 @@
 %{
 #include <stdio.h>
 #include "y.tab.h"
+
 extern int sym_type(const char *);  /* returns type from symbol table */
+
 void error(char *msg) {
     printf("%s\n", msg);
     exit(0);
 }
+
 %}
 
 %e  1019
@@ -56,13 +59,13 @@ WS  [ \t\v\n\f]
 {L}{A}*					{ return IDENTIFIER; /*TODO: check_type() */}
 
 {HP}{H}+{IS}?				{ return I_CONSTANT; }
-{NZ}{D}*{IS}?				{ return I_CONSTANT; }
+{NZ}{D}*{IS}?				{ yylval.iconst = atoi(yytext); return I_CONSTANT; }
 "0"{O}*{IS}?				{ return I_CONSTANT; }
 {CP}?"'"([^'\\\n]|{ES})+"'"		{ return I_CONSTANT; }
 
-{D}+{E}{FS}?				{ return F_CONSTANT; }
-{D}*"."{D}+{E}?{FS}?			{ return F_CONSTANT; }
-{D}+"."{E}?{FS}?			{ return F_CONSTANT; }
+{D}+{E}{FS}?				{ yylval.dconst = atof(yytext); return F_CONSTANT; }
+{D}*"."{D}+{E}?{FS}?			{yylval.dconst = atof(yytext); return F_CONSTANT; }
+{D}+"."{E}?{FS}?			{ yylval.dconst = atof(yytext); return F_CONSTANT; }
 {HP}{H}+{P}{FS}?			{ return F_CONSTANT; }
 {HP}{H}*"."{H}+{P}{FS}?			{ return F_CONSTANT; }
 {HP}{H}+"."{P}{FS}?			{ return F_CONSTANT; }

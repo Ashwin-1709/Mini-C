@@ -65,9 +65,9 @@ extern int yydebug;
     WHILE = 271,
     MAIN_FUNCTION = 272,
     IDENTIFIER = 273,
-    I_CONSTANT = 274,
-    F_CONSTANT = 275,
-    STRING_LITERAL = 276,
+    STRING_LITERAL = 274,
+    I_CONSTANT = 275,
+    F_CONSTANT = 276,
     AND_OP = 277,
     OR_OP = 278,
     LE_OP = 279,
@@ -115,9 +115,9 @@ extern int yydebug;
 #define WHILE 271
 #define MAIN_FUNCTION 272
 #define IDENTIFIER 273
-#define I_CONSTANT 274
-#define F_CONSTANT 275
-#define STRING_LITERAL 276
+#define STRING_LITERAL 274
+#define I_CONSTANT 275
+#define F_CONSTANT 276
 #define AND_OP 277
 #define OR_OP 278
 #define LE_OP 279
@@ -149,7 +149,17 @@ extern int yydebug;
 
 /* Value type.  */
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
-typedef int YYSTYPE;
+union YYSTYPE
+{
+#line 6 "parser.y"
+
+    int iconst;
+    float dconst;
+
+#line 160 "y.tab.h"
+
+};
+typedef union YYSTYPE YYSTYPE;
 # define YYSTYPE_IS_TRIVIAL 1
 # define YYSTYPE_IS_DECLARED 1
 #endif
