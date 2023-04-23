@@ -21,7 +21,7 @@ int main() {
     /* hello sasasas
      * hi
      */
-    func(1 , 2 , 3);
+    float ans = 2e3 * func(1 , 2 , 3);
     int testInteger = 5;
     printf("Number = %d", testInteger);
 

@@ -193,7 +193,9 @@ addr : AMPERSAND IDENTIFIER
 
 int main() {
     yyparse();
-    printf("Parsed\n");
+    printf("Lexical Analysis done......\n");
+    printf("Syntax Analysis done......\nProgram is Syntactically correct\n");
+    printf("Initiating simulation and semantic analysis.........\n");
 }
 
 int yyerror() {
