@@ -11,28 +11,15 @@ void error(char *msg) {
 
 %}
 
-%e  1019
-%p  2807
-%n  371
-%k  284
-%a  1213
-%o  1117
 
-O   [0-7]
-D   [0-9]
-NZ  [1-9]
-L   [a-zA-Z_]
-A   [a-zA-Z_0-9]
-H   [a-fA-F0-9]
-HP  (0[xX])
-E   ([Ee][+-]?{D}+)
-P   ([Pp][+-]?{D}+)
-FS  (f|F|l|L)
-IS  (((u|U)(l|L|ll|LL)?)|((l|L|ll|LL)(u|U)?))
-CP  (u|U|L)
-SP  (u8|u|U|L)
-ES  (\\(['"\?\\abfnrtv]|[0-7]{1,3}|x[a-fA-F0-9]+))
-WS  [ \t\v\n\f]
+DIGIT           [0-9]
+NONZERO         [1-9]
+LETTER          [a-zA-Z_]
+ALNUM           [a-zA-Z_0-9]
+EXPONENT        ([Ee][+-]?{DIGIT}+)
+FLOAT_SUFFIX    (f|F|l|L)
+ESCAPE_SEQUENCE (\\(['"\?\\abfnrtv]))
+WHITESPACE      [ \t\v\n\f]
 
 %%
 "/*"(.|\n|\s)*"*/"                                 {/*comment();*/ }
@@ -56,21 +43,16 @@ WS  [ \t\v\n\f]
 "printf"                {return PRINTF_TOKEN;}
 "scanf"                 {return SCANF_TOKEN;}
 
-{L}{A}*					{ return IDENTIFIER; /*TODO: check_type() */}
+{LETTER}{ALNUM}*					{ return IDENTIFIER; /*TODO: check_type() */}
 
-{HP}{H}+{IS}?				{ return I_CONSTANT; }
-{NZ}{D}*{IS}?				{ yylval.iconst = atoi(yytext); return I_CONSTANT; }
-"0"{O}*{IS}?				{ return I_CONSTANT; }
-{CP}?"'"([^'\\\n]|{ES})+"'"		{ return I_CONSTANT; }
+("0"|{NONZERO}({DIGIT}*))				{ yylval.iconst = atoi(yytext); return I_CONSTANT; }
+"'"([^'\\\n]|{ESCAPE_SEQUENCE})+"'"		{ return I_CONSTANT; }
 
-{D}+{E}{FS}?				{ yylval.dconst = atof(yytext); return F_CONSTANT; }
-{D}*"."{D}+{E}?{FS}?			{yylval.dconst = atof(yytext); return F_CONSTANT; }
-{D}+"."{E}?{FS}?			{ yylval.dconst = atof(yytext); return F_CONSTANT; }
-{HP}{H}+{P}{FS}?			{ return F_CONSTANT; }
-{HP}{H}*"."{H}+{P}{FS}?			{ return F_CONSTANT; }
-{HP}{H}+"."{P}{FS}?			{ return F_CONSTANT; }
+{DIGIT}+{EXPONENT}{FLOAT_SUFFIX}?				{ yylval.dconst = atof(yytext); return F_CONSTANT; }
+{DIGIT}*"."{DIGIT}+{EXPONENT}?{FLOAT_SUFFIX}?			{yylval.dconst = atof(yytext); return F_CONSTANT; }
+{DIGIT}+"."{EXPONENT}?{FLOAT_SUFFIX}?			{ yylval.dconst = atof(yytext); return F_CONSTANT; }
 
-({SP}?\"([^"\\\n]|{ES})*\"{WS}*)+	{ return STRING_LITERAL; }
+(\"([^"\\\n]|{ESCAPE_SEQUENCE})*\"{WHITESPACE}*)+	{ return STRING_LITERAL; }
 
 "&&"					{ return AND_OP; }
 "||"					{ return OR_OP; }
@@ -99,7 +81,7 @@ WS  [ \t\v\n\f]
 "<"					{ return LT_OP; }
 ">"					{ return GT_OP; }
 
-{WS}+					{ /* whitespace separates tokens */ }
+{WHITESPACE}+					{ /* whitespace separates tokens */ }
 .					{ error("Error in lexical Analysis\n"); }
 
 %%
