@@ -14,12 +14,8 @@
 %token<dconst>F_CONSTANT
 %token AND_OP OR_OP LE_OP GE_OP EQ_OP NE_OP EQUAL_SIGN
 %token SEMICOLON LEFT_CURLY RIGHT_CURLY COMMA COLON LEFT_ROUND RIGHT_ROUND LEFT_SQUARE RIGHT_SQUARE DOT
-%token AMPERSAND PLUS STAR SLASH LT_OP GT_OP PERCENT
-%token PRINTF_TOKEN SCANF_TOKEN
-%token<iconst> EXCLAMATION
-%token<iconst> HYPHEN
-%type<iconst>expression_statement
-%type<iconst>unary_expr
+%token AMPERSAND EXCLAMATION HYPHEN PLUS STAR SLASH LT_OP GT_OP PERCENT
+%token PRINTF_TOKEN SCANF_TOKEN UNARY_HYPHEN
 
 %right EQUAL_SIGN
 %left OR_OP
@@ -86,32 +82,32 @@ return_statement : RETURN expr
 ;
 /* Expression */
 expr : SEMICOLON 
-        | expression_statement SEMICOLON  {printf("---parsed expression---- %d\n", $1);}
+        | expression_statement SEMICOLON  //{printf("---parsed expression----\n");}
         | expr COMMA expr SEMICOLON
       
 ;
-expression_statement : expression_statement OR_OP expression_statement {printf("expr || expr reduced\n"); $$ = $1 || $3; printf("here = %d\n", $$);}| 
-				       expression_statement AND_OP expression_statement {printf("expr && expr reduced\n"); $$ = $1 && $3; printf("here = %d\n", $$);}|
-				       expression_statement GT_OP expression_statement  {printf("expr > expr reduced\n"); $$ = $1 > $3; printf("here = %d\n", $$);}|
-			           expression_statement LT_OP expression_statement {printf("expr < expr reduced\n"); $$ = $1 < $3; printf("here = %d\n", $$);}|
-				       expression_statement GE_OP expression_statement {printf("expr >= expr reduced\n"); $$ = $1 >= $3; printf("here = %d\n", $$);}|
-				       expression_statement LE_OP expression_statement {printf("expr <= expr reduced\n"); $$ = $1 <= $3; printf("here = %d\n", $$);}| 
-				       expression_statement PLUS expression_statement {printf("expr + expr reduced\n"); $$ = $1 + $3; printf("here = %d\n", $$);}|
-				       expression_statement HYPHEN expression_statement {printf("expr - expr reduced\n"); $$ = $1 - $3; printf("here = %d\n", $$);}|
-				       expression_statement STAR expression_statement {printf("expr * expr reduced\n"); $$ = $1 * $3; printf("here = %d\n", $$);}|
-				       expression_statement SLASH expression_statement {printf("expr / expr reduced\n"); $$ = $1 / $3; printf("here = %d\n", $$);}|
-				       expression_statement PERCENT expression_statement {printf("expr mod expr reduced\n"); $$ = $1 % $3; printf("here = %d\n", $$);}|
-                       expression_statement EQ_OP expression_statement {printf("expr == expr reduced\n"); $$ = $1 == $3; printf("here = %d\n", $$);}|
-                       expression_statement NE_OP expression_statement {printf("expr != expr reduced\n"); $$ = $1 != $3; printf("here = %d\n", $$);}|
-				       unary_expr {printf("unary reduced\n"); $$ = $1; printf("here = %d\n", $$);} |
-                       /* assignment_statement  |
-				       functional_call | */
-				       LEFT_ROUND expression_statement RIGHT_ROUND {$$ = $2;}|
-				        I_CONSTANT {;} //| F_CONSTANT | STRING_LITERAL | arr_element | IDENTIFIER
+expression_statement : expression_statement OR_OP expression_statement //{printf("expr || expr parsed\n");}| 
+				      | expression_statement AND_OP expression_statement //{printf("expr && expr parsed\n");}|
+				      | expression_statement GT_OP expression_statement  //{printf("expr > expr parsed\n");}|
+			          | expression_statement LT_OP expression_statement //{printf("expr < expr parsed\n");}|
+				      | expression_statement GE_OP expression_statement //{printf("expr >= expr parsed\n");}|
+				      | expression_statement LE_OP expression_statement //{printf("expr <= expr parsed\n");}| 
+				      | expression_statement PLUS expression_statement //{printf("expr + expr parsed\n");}|
+				      | expression_statement HYPHEN expression_statement //{printf("expr - expr parsed\n");}|
+				      | expression_statement STAR expression_statement //{printf("expr * expr parsed\n");}|
+				      | expression_statement SLASH expression_statement //{printf("expr / expr parsed\n");}|
+				      | expression_statement PERCENT expression_statement //{printf("expr mod expr parsed\n");}|
+                      | expression_statement EQ_OP expression_statement //{printf("expr == expr parsed\n");}|
+                      | expression_statement NE_OP expression_statement //{printf("expr != expr parsed\n");}|
+				      | unary_expr //{printf("unary parsed\n");}|
+                      | assignment_statement 
+				      | functional_call 
+				      | LEFT_ROUND expression_statement RIGHT_ROUND 
+				      |  I_CONSTANT | F_CONSTANT | STRING_LITERAL | arr_element | IDENTIFIER
 ;
 
-unary_expr : EXCLAMATION expression_statement %prec EXCLAMATION {printf("!(expr) reduced\n"); $$ = !$1;printf("here = %d\n", $$);}
-            | HYPHEN expression_statement %prec HYPHEN {printf("-(expr) reduced\n"); $$ = -$1;printf("here = %d\n", $$);}
+unary_expr : EXCLAMATION expression_statement %prec EXCLAMATION //{printf("!(expr) parsed\n");}
+            | HYPHEN expression_statement %prec HYPHEN //{printf("-(expr) parsed\n");}
 ;
 
 functional_call : IDENTIFIER LEFT_ROUND RIGHT_ROUND 
