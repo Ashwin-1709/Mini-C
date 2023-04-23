@@ -1,13 +1,11 @@
 %{
 #include <stdio.h>
-
-
+#include "y.tab.h"
 extern int sym_type(const char *);  /* returns type from symbol table */
-
-//#define sym_type(identifier) IDENTIFIER /* with no symbol table, fake it */
-
-//static void comment(void);
-//static int check_type(void);
+void error(char *msg) {
+    printf("%s\n", msg);
+    exit(0);
+}
 %}
 
 %e  1019
@@ -42,18 +40,18 @@ WS  [ \t\v\n\f]
 "char"					{ return CHAR; }
 "continue"				{ return CONTINUE; }
 "default"				{ return DEFAULT; }
-"double"				{ return DOUBLE; }
 "else"					{ return ELSE; }
 "float"					{ return FLOAT; }
 "for"					{ return FOR; }
 "if"					{ return IF; }
 "int"					{ return INT; }
-"long"					{ return LONG; }
 "return"				{ return RETURN; }
-"short"					{ return SHORT; }
 "switch"				{ return SWITCH; }
 "void"					{ return VOID; }
 "while"					{ return WHILE; }
+"main"                  {return MAIN_FUNCTION;}
+"printf"                {return PRINTF_TOKEN;}
+"scanf"                 {return SCANF_TOKEN;}
 
 {L}{A}*					{ return IDENTIFIER; /*TODO: check_type() */}
 
@@ -95,51 +93,14 @@ WS  [ \t\v\n\f]
 "*"					{ return STAR; }
 "/"					{ return SLASH; }
 "%"					{ return PERCENT; }
-"<"					{ return LEFT_ANGLE; }
-">"					{ return RIGHT_ANGLE; }
+"<"					{ return LT_OP; }
+">"					{ return GT_OP; }
 
 {WS}+					{ /* whitespace separates tokens */ }
-.					{ return ERROR; }
+.					{ error("Error in lexical Analysis\n"); }
 
 %%
 
-int yywrap(void)        /* called at end of input */
-{
+int yywrap(void) {       /* called at end of input */ 
     return 1;           /* terminate now */
-}
-
-// static void comment(void)
-// {
-//     int c;
-//
-//     while ((c = input()) != 0)
-//         if (c == '*')
-//         {
-//             while ((c = input()) == '*')
-//                 ;
-//
-//             if (c == '/')
-//                 return;
-//
-//             if (c == 0)
-//                 break;
-//         }
-//     yyerror("unterminated comment");
-// }
-
-//static int check_type(void)
-//{
-//    switch (sym_type(yytext))
-//    {
-//    case TYPEDEF_NAME:                /* previously defined */
-//        return TYPEDEF_NAME;
-//    case ENUMERATION_CONSTANT:        /* previously defined */
-//        return ENUMERATION_CONSTANT;
-//    default:                          /* includes undefined */
-//        return IDENTIFIER;
-//    }
-//}
-
-int main() {
-    yylex();
 }
