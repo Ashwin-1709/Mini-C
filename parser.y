@@ -24,7 +24,7 @@
 %left GT_OP LT_OP GE_OP LE_OP
 %left PLUS HYPHEN
 %left STAR SLASH PERCENT
-%right EXCLAMATION
+%right EXCLAMATION UNARY_MINUS
 %%
 /* Functional declarations */
 s : main_func | functional_declaration s
@@ -107,7 +107,7 @@ expression_statement : expression_statement OR_OP expression_statement //{printf
 ;
 
 unary_expr : EXCLAMATION expression_statement %prec EXCLAMATION //{printf("!(expr) parsed\n");}
-            | HYPHEN expression_statement %prec HYPHEN //{printf("-(expr) parsed\n");}
+            | HYPHEN expression_statement %prec UNARY_MINUS //{printf("-(expr) parsed\n");}
 ;
 
 functional_call : IDENTIFIER LEFT_ROUND RIGHT_ROUND 
