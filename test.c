@@ -47,7 +47,7 @@ int main() {
             }
             break;
         default : 
-            scanf("%d", &x);
+            x = x - 1;
     }
 
     if(x * 5) {

@@ -1,5 +1,6 @@
 %{
 #include <stdio.h>
+#include "ast.h"
 #include "y.tab.h"
 
 extern int sym_type(const char *);  /* returns type from symbol table */
@@ -41,18 +42,17 @@ WHITESPACE      [ \t\v\n\f]
 "while"					{ return WHILE; }
 "main"                  {return MAIN_FUNCTION;}
 "printf"                {return PRINTF_TOKEN;}
-"scanf"                 {return SCANF_TOKEN;}
 
-{LETTER}{ALNUM}*					{ return IDENTIFIER; /*TODO: check_type() */}
+{LETTER}{ALNUM}*					{ strcpy(yylval.label, yytext); return IDENTIFIER;}
 
-("0"|{NONZERO}({DIGIT}*))				{ yylval.iconst = atoi(yytext); return I_CONSTANT; }
-"'"([^'\\\n]|{ESCAPE_SEQUENCE})+"'"		{ return I_CONSTANT; }
+("0"|{NONZERO}({DIGIT}*))				{ yylval.ival = atoi(yytext); return I_CONSTANT; }
+"'"([^'\\\n]|{ESCAPE_SEQUENCE})+"'"		{ yylval.ival = atoi(yytext); return I_CONSTANT; }
 
-{DIGIT}+{EXPONENT}{FLOAT_SUFFIX}?				{ yylval.dconst = atof(yytext); return F_CONSTANT; }
-{DIGIT}*"."{DIGIT}+{EXPONENT}?{FLOAT_SUFFIX}?			{yylval.dconst = atof(yytext); return F_CONSTANT; }
-{DIGIT}+"."{EXPONENT}?{FLOAT_SUFFIX}?			{ yylval.dconst = atof(yytext); return F_CONSTANT; }
+{DIGIT}+{EXPONENT}{FLOAT_SUFFIX}?				{ yylval.fval = atof(yytext); return F_CONSTANT; }
+{DIGIT}*"."{DIGIT}+{EXPONENT}?{FLOAT_SUFFIX}?			{  yylval.fval = atof(yytext); return F_CONSTANT; }
+{DIGIT}+"."{EXPONENT}?{FLOAT_SUFFIX}?			{   yylval.fval = atof(yytext); return F_CONSTANT; }
 
-(\"([^"\\\n]|{ESCAPE_SEQUENCE})*\"{WHITESPACE}*)+	{ return STRING_LITERAL; }
+(\"([^"\\\n]|{ESCAPE_SEQUENCE})*\"{WHITESPACE}*)+	{ strcpy(yylval.label, yytext); return STRING_LITERAL; }
 
 "&&"					{ return AND_OP; }
 "||"					{ return OR_OP; }
@@ -70,8 +70,6 @@ WHITESPACE      [ \t\v\n\f]
 ")"					{ return RIGHT_ROUND; }
 "["     				{ return LEFT_SQUARE; }
 "]"     				{ return RIGHT_SQUARE; }
-"."					{ return DOT; }
-"&"					{ return AMPERSAND; }
 "!"					{ return EXCLAMATION; }
 "-"					{ return HYPHEN; }
 "+"					{ return PLUS; }
