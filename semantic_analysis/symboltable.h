@@ -20,7 +20,7 @@
 */
 
 
-int type(char *id) {
+static int type(char *id) {
     if(strcmp(id , "int") == 0)
         return 0;
     if(strcmp(id , "float") == 0)
@@ -39,32 +39,75 @@ int type(char *id) {
         return 7;
     if(strcmp(id , "act") == 0)
         return 8;
-    return 9; // function
+    if(strcmp(id , "function") == 0)
+            return 9;
+    return 10; // void
 }
 
-int vtoi(void *p) {
+static char* retype(int type) {
+    char *id;
+    switch(type) {
+        case 0 :
+            id = "int";
+            return id;
+        case 1 :
+            id = "float";
+            return id;
+        case 2 :
+            id = "char";
+            return id;
+        case 3 :
+            id = "aio";
+            return id;
+        case 4 :
+            id = "ait";
+            return id;
+        case 5 :
+            id = "afo";
+            return id;
+        case 6 :
+            id = "aft";
+            return id;
+        case 7 :
+            id = "aco";
+            return id;
+        case 8 :
+            id = "act";
+            return id;
+        case 9 :
+            id = "function";
+            return id;
+        case 10 :
+            id = "void";
+            return id;
+    }
+    id = "N/A";
+    return id;
+}
+
+static int vtoi(void *p) {
     return *(int *)p;
 }
 
-char vtoc(void *p) {
+static char vtoc(void *p) {
     return *(char *)p;
 }
 
-float vtof(void *p) {
+static float vtof(void *p) {
     return *(float *)p;
 }
 
-int *vtoa(void *p) {
+static int *vtoa(void *p) {
     int *n = (int *)p;
     return n;
 }
 
-float *vtofa(void *p) {
+static float *vtofa(void *p) {
     float *n = (float *)p;
     return n;
 }
 
-char *vtoca(void *p) {
+static char *vtoca(void *p) {
     char *n = (char *)p;
     return n;
 }
@@ -163,6 +206,27 @@ static table* changeScope(table* cur) {
     table *child = createTable();
     chainTable(cur , child);
     return child;
+}
+
+static void insertfunc(char*id , int type , table *curtable , int count,...) {
+    va_list arglist;
+    int *args = malloc(sizeof(int) * count);
+    va_start(arglist, count);
+    
+    for(int i = 0 ; i < count ; i++) {
+        int now = va_arg(arglist, int);
+        args[i] = now;
+    }
+
+    va_end(arglist);
+    entry* cur = (entry *)(malloc(sizeof(entry)));
+    cur->id = strdup(id);
+    cur->type = type;
+    cur->isfunc = true;
+    cur->x_lim = count;
+    cur->y_lim = -1;
+    cur->parameters = args;
+    insert(cur , curtable);
 }
 
 #endif

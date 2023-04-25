@@ -6,6 +6,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdarg.h>
+#include "symboltable.h"
 
 /*
     type -> 0 - int
@@ -22,6 +23,7 @@
 typedef struct astNode {
     int childCnt;
     struct astNode* child[55];
+    int type;
     char label[200];
 } astNode;
 
@@ -32,6 +34,7 @@ static astNode* createNode() {
         cur->label[i] = 0;
     for(int i = 0; i < 55 ; i++)
         cur->child[i] = NULL;
+    cur->type = -1;
     return cur;    
 }
 
@@ -40,6 +43,7 @@ static astNode* createNodeByVal(float val) {
     char buf[50];
     gcvt(val, 10 , buf);
     strcpy(cur->label, buf);
+    cur->type = type("float");
     return cur;    
 }
 
@@ -48,6 +52,7 @@ static astNode* createNodeByIntVal(int val) {
     char buf[50];
     sprintf(buf, "%d" , val);
     strcpy(cur->label, buf);
+    cur->type = type("int");
     return cur;    
 }
 

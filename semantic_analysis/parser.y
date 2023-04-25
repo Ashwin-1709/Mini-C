@@ -1,5 +1,18 @@
 %{
     #include "ast.h"
+    #include "symboltable.h"
+
+    void declerr(char *id) {
+        printf("%s redeclared\n", id);
+        exit(0);
+    }
+
+    void assignError(char *id , char *type , char *exprtype) {
+        printf("Expected type of expression for %s is %s but %s found\n", id , type , exprtype);
+        exit(0);
+    }
+
+    table* cur_table = createTable();
 %}
 
 
@@ -48,13 +61,13 @@ P : main_func {$$ = $1;}
 functional_declaration : func_type func_declarator compound_statement {$$ = passNode("func_declaration", 3 , $1 , $2 , $3);}
 ;
 
-var_type : INT {$$ = passNode("int" , 0);} 
-          | CHAR {$$ = passNode("char" , 0);}
-          | FLOAT {$$ = passNode("float" , 0);}
+var_type : INT {$$ = passNode("int" , 0); $$->type = 0;} 
+          | CHAR {$$ = passNode("char" , 0); $$->type = 2;}
+          | FLOAT {$$ = passNode("float" , 0); $$->type = 1;}
 ;
 
 func_type : var_type {$$ = passNode("var_type" , 1 , $1);} 
-            | VOID {$$ = passNode("void" , 0);}
+            | VOID {$$ = passNode("void" , 0); $$->type = 10;}
 ;
 
 func_declarator : IDENTIFIER LEFT_ROUND RIGHT_ROUND  {

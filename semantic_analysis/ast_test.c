@@ -27,5 +27,10 @@ int main() {
     char c = 'a';
     insertvar("c" , type("char"), (void *)&c , -1 , -1 , child);
     printf("%d %d\n", typevar(child, "c") , typevar(parent, "c"));
+    printf("%s %s %s %s %s %s\n", retype(0), retype(1) , retype(2) , retype(3) , retype(9) , retype(-1));
+
+    insertfunc("solve", 0, parent , 3 , 0 , 0 , 1);
+    printf("%d\n", isDeclared("solve" , parent));
+
     return 0;
 }
