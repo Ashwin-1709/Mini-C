@@ -269,72 +269,185 @@ arr_element : IDENTIFIER LEFT_SQUARE I_CONSTANT RIGHT_SQUARE {
 ;
 
 /* Assignment */
-assignment_statement : IDENTIFIER EQUAL_SIGN expression_statement %prec EQUAL_SIGN
-                       | arr_element EQUAL_SIGN expression_statement %prec EQUAL_SIGN
+assignment_statement : IDENTIFIER EQUAL_SIGN expression_statement %prec EQUAL_SIGN{
+                            astNode* identifier = createNodeByLabel("id");
+                            astNode* actual_id = createNodeByLabel($1);
+                            addNode(identifier, actual_id);
+                            astNode* equalto = createNodeByLabel("=");
+                            $$ = passNode("assign_stmt", 3, identifier, equalto, $3);
+                        }
+                       | arr_element EQUAL_SIGN expression_statement %prec EQUAL_SIGN{
+                            astNode* equalto = createNodeByLabel("=");
+                            $$ = passNode("assign_stmt", 3, $1, equalto, $3);
+                        }
 ;
 
 /* Switch-case */
-switch_statment : SWITCH LEFT_ROUND expression_statement RIGHT_ROUND LEFT_CURLY case_list_def RIGHT_CURLY
+switch_statment : SWITCH LEFT_ROUND expression_statement RIGHT_ROUND LEFT_CURLY case_list_def RIGHT_CURLY{
+                            astNode* switch_terminal = createNodeByLabel("switch");
+                            astNode* left_round = createNodeByLabel("(");
+                            astNode* right_round = createNodeByLabel(")");
+                            astNode* left_curly = createNodeByLabel("{");
+                            astNode* right_curly = createNodeByLabel("}");
+                            $$ = passNode("switch_stmt", 7, switch_terminal, left_round, $3, right_round, left_curly, $6, right_curly);
+                        }
 ;
-case_list_def : case_list 
-                | case_list default_stmt
-                | {}
+case_list_def : case_list {$$ = passNode("case_list_def", 1, $1);}
+                | case_list default_stmt {$$ = passNode("case_list_def", 2, $1, $2);}
+                | {$$ = passNode("case_list_def", 0);}
 ;
-case_list :  case | case_list case
+case_list :  case {$$ = passNode("case_list", 1, $1);} | case_list case {$$ = passNode("case_list", 2, $1, $2);}
 ;
-case : CASE expression_statement COLON statement_list 
-       | CASE expression_statement COLON
+case : CASE expression_statement COLON statement_list {
+                            astNode* case_st = createNodeByLabel("case");
+                            astNode* colon = createNodeByLabel(":");
+                            $$ = passNode("case_st", 4, case_st, $2, colon, $4);
+                        }
+       | CASE expression_statement COLON {
+                            astNode* case_st = createNodeByLabel("case");
+                            astNode* colon = createNodeByLabel(":");
+                            $$ = passNode("case_st", 3, case_st, $2, colon);
+                        }
 ;
-default_stmt : DEFAULT COLON statement_list
-              | DEFAULT COLON
+default_stmt : DEFAULT COLON statement_list {
+                            astNode* default_st = createNodeByLabel("default");
+                            astNode* colon = createNodeByLabel(":");
+                            $$ = passNode("default_stmt", 3, default_st, colon, $3);
+                        }
+              | DEFAULT COLON {
+                            astNode* default_st = createNodeByLabel("default");
+                            astNode* colon = createNodeByLabel(":");
+                            $$ = passNode("default_stmt", 2, default_st, colon);
+                        }
 ;
 
 /* if else */
-if_statement: IF LEFT_ROUND expression_statement RIGHT_ROUND single_statement else_clause
+if_statement: IF LEFT_ROUND expression_statement RIGHT_ROUND single_statement else_clause {
+                            astNode* if_st = createNodeByLabel("if");
+                            astNode* left_round = createNodeByLabel("(");
+                            astNode* right_round = createNodeByLabel(")");
+                            $$ = passNode("if_stmt", 6, if_st, left_round, $3, right_round, $5, $6);
+                        }
 ;
-else_clause : ELSE single_statement
-            | {}
+else_clause : ELSE single_statement {
+                            astNode* else_st = createNodeByLabel("else");
+                            $$ = passNode("else_clause", 2, else_st, $2);
+                        }
+            | {$$ = passNode("else_clause", 0);}
 ;
 /* For loop */ 
-for_loop_assignment : assignment_statement 
-                     | assignment_statement COMMA for_loop_assignment 
-                     | {}
+for_loop_assignment : assignment_statement {$$ = passNode("for_assign", 1, $1);}
+                    | assignment_statement COMMA for_loop_assignment{
+                            astNode* comma = createNodeByLabel(",");
+                            $$ = passNode("for_assign", 3, $1, comma, $3);        
+                        }
+                    | {$$ = passNode("for_assign", 0);}
 ;
-for_loop_declaration : declaration 
-                       | SEMICOLON
+for_loop_declaration : declaration {$$ = passNode("for_declare", 1, $1);}
+                       | SEMICOLON {astNode* semicolon = createNodeByLabel(";"); $$ = passNode("for_declare", 1, semicolon);}
 ;
-for_statement : FOR LEFT_ROUND for_loop_declaration expr for_loop_assignment RIGHT_ROUND statement_list 
+for_statement : FOR LEFT_ROUND for_loop_declaration expr for_loop_assignment RIGHT_ROUND statement_list{
+                        astNode* for_st = createNodeByLabel("for");
+                        astNode* left_round = createNodeByLabel("(");
+                        astNode* right_round = createNodeByLabel(")");
+                        $$ = passNode("for_stmt", 7, for_st, left_round, $3, $4, $5, right_round, $7);
+                    }
 ;
 
 /* declaration */
-declaration : var_type init_declarator_list SEMICOLON
+declaration : var_type init_declarator_list SEMICOLON{
+                        astNode* semicolon = createNodeByLabel(";");
+                        $$ = passNode("declaration", 3, $1, $2, semicolon);
+                    }
 ;
-init_declarator_list : init_declarator_list COMMA init_declarator | init_declarator
+init_declarator_list : init_declarator_list COMMA init_declarator {
+                        astNode* comma = createNodeByLabel(",");
+                        $$ = passNode("init_dec_list", 3, $1, comma, $3);
+                    }
+                    | init_declarator {$$ = passNode("init_dec_list", 1, $1);}
 ;
-init_declarator : declarator_var EQUAL_SIGN expression_statement 
-                 | declarator_var
-                 | declarator_arr
+init_declarator : declarator_var EQUAL_SIGN expression_statement {
+                        astNode* equalto = createNodeByLabel("=");
+                        $$ = passNode("init_dec", 3, $1, equalto, $3);
+                    }
+                 | declarator_var {$$ = passNode("init_dec", 1, $1);}
+                 | declarator_arr {$$ = passNode("init_dec", 1, $1);}
 ;
-declarator_var : IDENTIFIER
+declarator_var : IDENTIFIER {
+                        astNode* identifier = createNodeByLabel("id");
+                        astNode* actual_id = createNodeByLabel($1);
+                        addNode(identifier, actual_id);
+                        $$ = passNode("dec_var", 1, identifier);
+                    }
 ;
-declarator_arr : IDENTIFIER LEFT_SQUARE expression_statement RIGHT_SQUARE
-                | IDENTIFIER LEFT_SQUARE expression_statement RIGHT_SQUARE LEFT_SQUARE expression_statement RIGHT_SQUARE
+declarator_arr : IDENTIFIER LEFT_SQUARE expression_statement RIGHT_SQUARE{
+                        astNode* identifier = createNodeByLabel("id");
+                        astNode* actual_id = createNodeByLabel($1);
+                        addNode(identifier, actual_id);
+                        astNode* left_square = createNodeByLabel("[");
+                        astNode* right_square = createNodeByLabel("]");
+                        $$ = passNode("dec_arr", 4, identifier, left_square, $3, right_square);
+                    }
+                | IDENTIFIER LEFT_SQUARE expression_statement RIGHT_SQUARE LEFT_SQUARE expression_statement RIGHT_SQUARE{
+                        astNode* identifier = createNodeByLabel("id");
+                        astNode* actual_id = createNodeByLabel($1);
+                        addNode(identifier, actual_id);
+                        astNode* left_square = createNodeByLabel("[");
+                        astNode* right_square = createNodeByLabel("]");
+                        $$ = passNode("dec_arr", 7, identifier, left_square, $3, right_square, left_square, $6, right_square);
+                    }
 ;
 /* While */
-while_statement : WHILE LEFT_ROUND expression_statement RIGHT_ROUND statement_list
+while_statement : WHILE LEFT_ROUND expression_statement RIGHT_ROUND statement_list{
+                        astNode* while_st = createNodeByLabel("while");
+                        astNode* left_round = createNodeByLabel("(");
+                        astNode* right_round = createNodeByLabel(")");
+                        $$ = passNode("while_stmt", 5, while_st, left_round, $3, right_round, $5);
+                    }
 ;
 
 /* Printf and scanf */
-print_statement : PRINTF_TOKEN LEFT_ROUND STRING_LITERAL RIGHT_ROUND SEMICOLON
-                 | PRINTF_TOKEN LEFT_ROUND STRING_LITERAL COMMA print_params RIGHT_ROUND SEMICOLON
+print_statement : PRINTF_TOKEN LEFT_ROUND STRING_LITERAL RIGHT_ROUND SEMICOLON{
+                        astNode* printf_tk = createNodeByLabel("printf");
+                        astNode* left_round = createNodeByLabel("(");
+                        astNode* string_lit = createNodeByLabel("string");
+                        astNode* string_lit_actual = createNodeByLabel($3);
+                        addNode(string_lit, string_lit_actual);
+                        astNode* right_round = createNodeByLabel(")");
+                        astNode* semicolon = createNodeByLabel(";");
+                        $$ = passNode("print_stmt", 5, printf_tk, left_round, string_lit, right_round, semicolon);
+                    }
+                 | PRINTF_TOKEN LEFT_ROUND STRING_LITERAL COMMA print_params RIGHT_ROUND SEMICOLON{
+                        astNode* printf_tk = createNodeByLabel("printf");
+                        astNode* left_round = createNodeByLabel("(");
+                        astNode* string_lit = createNodeByLabel("string");
+                        astNode* string_lit_actual = createNodeByLabel($3);
+                        addNode(string_lit, string_lit_actual);
+                        astNode* comma = createNodeByLabel(",");
+                        astNode* right_round = createNodeByLabel(")");
+                        astNode* semicolon = createNodeByLabel(";");
+                        $$ = passNode("print_stmt", 7, printf_tk, left_round, string_lit, comma, $5, right_round, semicolon);
+                 }
 ;
-print_params : IDENTIFIER | IDENTIFIER COMMA print_params
+print_params : IDENTIFIER {
+                astNode* identifier = createNodeByLabel("id");
+                astNode* actual_id = createNodeByLabel($1);
+                addNode(identifier, actual_id);
+                $$ = passNode("print_params", 1, identifier);
+            } 
+            | IDENTIFIER COMMA print_params {
+                astNode* identifier = createNodeByLabel("id");
+                astNode* actual_id = createNodeByLabel($1);
+                addNode(identifier, actual_id);
+                astNode* comma = createNodeByLabel(",");
+                $$ = passNode("print_params", 3, identifier, comma, $3);
+            }
 ;
 %%
 
 int main() {
     yyparse();
-    printf("\n\n\n----Syntax Analysis done----\n\n\n");
+    /* printf("\n\n\n----Syntax Analysis done----\n\n\n"); */
 }
 
 int yyerror() {
