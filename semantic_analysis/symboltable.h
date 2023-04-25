@@ -115,7 +115,7 @@ static char *vtoca(void *p) {
 typedef struct entry {
     char *id; // identifier
     void *value; // value
-    int x_lim; // if array then row lim, if func number of parameters
+    int x_lim; // if array then array len, if func number of parameters
     int y_lim; // if 2D array then col lim
     int type; // type of var
     bool isfunc;
@@ -210,7 +210,7 @@ static table* changeScope(table* cur) {
 
 static void insertfunc(char*id , int type , table *curtable , int count,...) {
     va_list arglist;
-    int *args = malloc(sizeof(int) * count);
+    int *args = (int *)malloc(sizeof(int) * count);
     va_start(arglist, count);
     
     for(int i = 0 ; i < count ; i++) {

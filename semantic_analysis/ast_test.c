@@ -32,5 +32,18 @@ int main() {
     insertfunc("solve", 0, parent , 3 , 0 , 0 , 1);
     printf("%d\n", isDeclared("solve" , parent));
 
+    // astNode* a = createNodeByLabel("S");
+    // astNode* b = createNodeByLabel("id");
+    // astNode* c = createNodeByLabel("func");
+    // astNode* d = createNodeByLabel("P");
+    // astNode* e = createNodeByLabel("x");
+    // astNode* f = createNodeByLabel("f");
+    // addNode(b , c);
+    // addNode(d, e);
+    // addNode(b , f);
+    
+    // addNode(a, d);
+    // // addNode(a, b);
+    // printf("%s\n", find_id(a));
     return 0;
 }

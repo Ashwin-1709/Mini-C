@@ -66,6 +66,9 @@ static void addNode(astNode* parent, astNode* child) {
     if(parent == NULL) {
         printf("parent is null\n");
         return;
+    } else if(child == NULL) {
+        printf("Child is null\n");
+        return;
     }
     int c = parent->childCnt++;
     astNode **children = parent->child;
@@ -90,5 +93,17 @@ static astNode* passNode(char *label,int count,...) {
     va_end(arglist);
     return cur;
 }
+
+static char *find_id(astNode* root) {
+    if(strcmp(root->label, "id") == 0) 
+        return root->child[0]->label;
+    char *id = "N/A";
+    for(int i = 0 ; i < root->childCnt ; i++) {
+        char *child_id = find_id(root->child[i]);
+        if(strcmp(child_id, id) != 0)
+            return child_id;
+    }
+    return id;
+};
 
 #endif

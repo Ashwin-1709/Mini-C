@@ -11,8 +11,9 @@
         printf("Expected type of expression for %s is %s but %s found\n", id , type , exprtype);
         exit(0);
     }
-
-    table* cur_table = createTable();
+    table* cur_table;
+    astNode* semantic_stack[50];
+    int cur_st = 0;
 %}
 
 
@@ -58,7 +59,16 @@ P : main_func {$$ = $1;}
    | functional_declaration P {$$ = passNode("P", 2 , $1 , $2);}
 ;
 
-functional_declaration : func_type func_declarator compound_statement {$$ = passNode("func_declaration", 3 , $1 , $2 , $3);}
+functional_declaration : func_type func_declarator {
+                    semantic_stack[cur_st++] = $1, semantic_stack[cur_st++] = $2;
+                    char *func_id = find_id($2);
+                    
+                }   compound_statement { 
+                    astNode* first = semantic_stack[cur_st - 2];
+                    astNode* second = semantic_stack[cur_st - 1];
+                    cur_st -= 2;
+                    $$ = passNode("func_declaration", 3 , first , second , $1); 
+                }
 ;
 
 var_type : INT {$$ = passNode("int" , 0); $$->type = 0;} 
@@ -66,7 +76,7 @@ var_type : INT {$$ = passNode("int" , 0); $$->type = 0;}
           | FLOAT {$$ = passNode("float" , 0); $$->type = 1;}
 ;
 
-func_type : var_type {$$ = passNode("var_type" , 1 , $1);} 
+func_type : var_type {$$ = passNode("var_type" , 1 , $1); $$->type = $1->type;} 
             | VOID {$$ = passNode("void" , 0); $$->type = 10;}
 ;
 
@@ -459,6 +469,7 @@ print_params : IDENTIFIER {
 %%
 
 int main() {
+    cur_table = createTable();
     yyparse();
     /* printf("\n\n\n----Syntax Analysis done----\n\n\n"); */
 }
