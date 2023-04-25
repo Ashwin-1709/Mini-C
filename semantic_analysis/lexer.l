@@ -12,6 +12,8 @@ void error(char *msg) {
 
 %}
 
+%option debug
+
 
 DIGIT           [0-9]
 NONZERO         [1-9]

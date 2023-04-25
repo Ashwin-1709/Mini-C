@@ -1,12 +1,10 @@
 CXX = g++
 CC = gcc
-CFLAGS = -Wall -g
+CFLAGS = -Wall -g -lfl
 
-all: lexer parser main
+# all: lexical syntax semantic
 
-main: lex.yy.c y.tab.c
-	$(CC) $(CFLAGS) lex.yy.c y.tab.c -lfl -o compiler
-lexer: lexer.l
-	flex lexer.l
-parser: parser.y
-	yacc -d parser.y
+SEMANTIC_FILES = semantic_analysis/lexer.l semantic_analysis/parser.y semantic_analysis/ast.h semantic_analysis/symboltable.h
+
+semantic: $(SEMANTIC_FILES)
+	cd semantic_analysis && make
