@@ -32,60 +32,60 @@ WHITESPACE      [ \t\v\n\f]
 "/*"(.|\n|\s)*"*/"                                 {for(int i =0;i<strlen(yytext);i++){if(yytext[i]=='\n'){lNum++;}}/*comment();*/ }
 "//".*                                    { /* consume //-comment */ }
  
-"break"					{printf("%d\t%s\t%s",lNum,yytext,"BREAK");}
-"case"					{printf("%d\t%s\t%s",lNum,yytext,"CASE"); }
-"char"					{printf("%d\t%s\t%s",lNum,yytext,"CHAR"); }
-"continue"				{printf("%d\t%s\t%s",lNum,yytext,"CONTINUE"); }
-"default"				{printf("%d\t%s\t%s",lNum,yytext,"DEFAULT");  }
-"else"					{printf("%d\t%s\t%s",lNum,yytext,"ELSE"); }
-"float"					{printf("%d\t%s\t%s",lNum,yytext,"FLOAT");  }
-"for"					{printf("%d\t%s\t%s",lNum,yytext,"FOR"); }
-"if"					{printf("%d\t%s\t%s",lNum,yytext,"IF"); }
-"int"					{printf("%d\t%s\t%s",lNum,yytext,"INT"); }
-"return"				{printf("%d\t%s\t%s",lNum,yytext,"RETURN"); }
-"switch"				{printf("%d\t%s\t%s",lNum,yytext,"SWITCH"); }
-"void"					{printf("%d\t%s\t%s",lNum,yytext,"VOID"); }
-"while"					{printf("%d\t%s\t%s",lNum,yytext,"WHILE"); }
-"main"                  {printf("%d\t%s\t%s",lNum,yytext,"MAIN_FUNCTION");}
-"printf"                {BEGIN PF;printf("%d\t%s\t%s",lNum,yytext,"PRINTF_TOKEN");}
-<PF>"("(\"([^"\\\n]|{ESCAPE_SEQUENCE})*\"{WHITESPACE}*)+	{pfCount+=varCount(yytext) ;printf("%d\t%s\t%s",lNum,yytext,"STRING_LITERAL");  }
-<PF>","{LETTER}{ALNUM}*	{pfCount--;printf("%d\t%s\t%s",lNum,yytext,"IDENTIFIER");}
-<PF>")"                   {if (pfCount==0){printf("Valid printf");} else {printf("Invalid printf\n");} BEGIN 0;}
-{LETTER}{ALNUM}*					{printf("%d\t%s\t%s",lNum,yytext,"IDENTIFIER");}
+"break"					{printf("%d\t%s\t%s\n",lNum,yytext,"BREAK");}
+"case"					{printf("%d\t%s\t%s\n",lNum,yytext,"CASE"); }
+"char"					{printf("%d\t%s\t%s\n",lNum,yytext,"CHAR"); }
+"continue"				{printf("%d\t%s\t%s\n",lNum,yytext,"CONTINUE"); }
+"default"				{printf("%d\t%s\t%s\n",lNum,yytext,"DEFAULT");  }
+"else"					{printf("%d\t%s\t%s\n",lNum,yytext,"ELSE"); }
+"float"					{printf("%d\t%s\t%s\n",lNum,yytext,"FLOAT");  }
+"for"					{printf("%d\t%s\t%s\n",lNum,yytext,"FOR"); }
+"if"					{printf("%d\t%s\t%s\n",lNum,yytext,"IF"); }
+"int"					{printf("%d\t%s\t%s\n",lNum,yytext,"INT"); }
+"return"				{printf("%d\t%s\t%s\n",lNum,yytext,"RETURN"); }
+"switch"				{printf("%d\t%s\t%s\n",lNum,yytext,"SWITCH"); }
+"void"					{printf("%d\t%s\t%s\n",lNum,yytext,"VOID"); }
+"while"					{printf("%d\t%s\t%s\n",lNum,yytext,"WHILE"); }
+"main"                  {printf("%d\t%s\t%s\n",lNum,yytext,"MAIN_FUNCTION");}
+"printf"                {BEGIN PF;printf("%d\t%s\t%s\n",lNum,yytext,"PRINTF_TOKEN");}
+<PF>"("(\"([^"\\\n]|{ESCAPE_SEQUENCE})*\"{WHITESPACE}*)+	{pfCount+=varCount(yytext);yytext[0]="";printf("%d\t%s\t%s\n",lNum,yytext,"STRING_LITERAL");  }
+<PF>","{LETTER}{ALNUM}*	{pfCount--;yytext[0]="";printf("%d\t%s\t%s\n",lNum,yytext,"IDENTIFIER");}
+<PF>")"                   {if (pfCount==0){printf("Valid printf\n");} else {printf("Invalid printf\n");} BEGIN 0;}
+{LETTER}{ALNUM}*					{printf("%d\t%s\t%s\n",lNum,yytext,"IDENTIFIER");}
  
-("0"|{NONZERO}({DIGIT}*))				{printf("%d\t%s\t%s",lNum,yytext,"I_CONSTANT"); }
-"'"([^'\\\n]|{ESCAPE_SEQUENCE})+"'"		{printf("%d\t%s\t%s",lNum,yytext,"I_CONSTANT"); }
+("0"|{NONZERO}({DIGIT}*))				{printf("%d\t%s\t%s\n",lNum,yytext,"I_CONSTANT"); }
+"'"([^'\\\n]|{ESCAPE_SEQUENCE})+"'"		{printf("%d\t%s\t%s\n",lNum,yytext,"I_CONSTANT"); }
  
-{DIGIT}+{EXPONENT}{FLOAT_SUFFIX}?				{printf("%d\t%s\t%s",lNum,yytext,"F_CONSTANT");  }
-{DIGIT}*"."{DIGIT}+{EXPONENT}?{FLOAT_SUFFIX}?			{printf("%d\t%s\t%s",lNum,yytext,"F_CONSTANT");  }
-{DIGIT}+"."{EXPONENT}?{FLOAT_SUFFIX}?			{printf("%d\t%s\t%s",lNum,yytext,"F_CONSTANT");  }
+{DIGIT}+{EXPONENT}{FLOAT_SUFFIX}?				{printf("%d\t%s\t%s\n",lNum,yytext,"F_CONSTANT");  }
+{DIGIT}*"."{DIGIT}+{EXPONENT}?{FLOAT_SUFFIX}?			{printf("%d\t%s\t%s\n",lNum,yytext,"F_CONSTANT");  }
+{DIGIT}+"."{EXPONENT}?{FLOAT_SUFFIX}?			{printf("%d\t%s\t%s\n",lNum,yytext,"F_CONSTANT");  }
  
-(\"([^"\\\n]|{ESCAPE_SEQUENCE})*\"{WHITESPACE}*)+	{printf("%d\t%s\t%s",lNum,yytext,"STRING_LITERAL"); }
+(\"([^"\\\n]|{ESCAPE_SEQUENCE})*\"{WHITESPACE}*)+	{printf("%d\t%s\t%s\n",lNum,yytext,"STRING_LITERAL"); }
  
-"&&"					{printf("%d\t%s\t%s",lNum,yytext,"AND_OP");  }
-"||"					{printf("%d\t%s\t%s",lNum,yytext,"OR_OP");  }
-"<="					{printf("%d\t%s\t%s",lNum,yytext,"LE_OP");  }
-">="					{printf("%d\t%s\t%s",lNum,yytext,"GE_OP");  }
-"=="					{printf("%d\t%s\t%s",lNum,yytext,"EQ_OP");  }
-"!="					{printf("%d\t%s\t%s",lNum,yytext,"NE_OP");  }
-";"					{printf("%d\t%s\t%s",lNum,yytext,"SEMICOLON");  }
-"{"     				{printf("%d\t%s\t%s",lNum,yytext,"LEFT_CURLY");  }
-"}"     				{printf("%d\t%s\t%s",lNum,yytext,"RIGHT_CURLY");  }
-","					{printf("%d\t%s\t%s",lNum,yytext,"COMMA");  }
-":"					{printf("%d\t%s\t%s",lNum,yytext,"COLON");  }
-"="					{printf("%d\t%s\t%s",lNum,yytext,"EQUAL_SIGN");  }
-"("					{printf("%d\t%s\t%s",lNum,yytext,"LEFT_ROUND");  }
-")"					{printf("%d\t%s\t%s",lNum,yytext,"RIGHT_ROUND");  }
-"["     			{printf("%d\t%s\t%s",lNum,yytext,"LEFT_SQUARE");  }
-"]"     			{printf("%d\t%s\t%s",lNum,yytext,"RIGHT_SQUARE"); }
-"!"					{printf("%d\t%s\t%s",lNum,yytext,"EXALAMATION");  }
-"-"					{printf("%d\t%s\t%s",lNum,yytext,"HYPHEN");  }
-"+"					{printf("%d\t%s\t%s",lNum,yytext,"PLUS");  }
-"*"					{printf("%d\t%s\t%s",lNum,yytext,"STAR");  }
-"/"					{printf("%d\t%s\t%s",lNum,yytext,"SLASH");  }
-"%"					{printf("%d\t%s\t%s",lNum,yytext,"PERCENT");  }
-"<"					{printf("%d\t%s\t%s",lNum,yytext,"LT_OP");  }
-">"					{printf("%d\t%s\t%s",lNum,yytext,"GT_OP");  }
+"&&"					{printf("%d\t%s\t%s\n",lNum,yytext,"AND_OP");  }
+"||"					{printf("%d\t%s\t%s\n",lNum,yytext,"OR_OP");  }
+"<="					{printf("%d\t%s\t%s\n",lNum,yytext,"LE_OP");  }
+">="					{printf("%d\t%s\t%s\n",lNum,yytext,"GE_OP");  }
+"=="					{printf("%d\t%s\t%s\n",lNum,yytext,"EQ_OP");  }
+"!="					{printf("%d\t%s\t%s\n",lNum,yytext,"NE_OP");  }
+";"					{printf("%d\t%s\t%s\n",lNum,yytext,"SEMICOLON");  }
+"{"     				{printf("%d\t%s\t%s\n",lNum,yytext,"LEFT_CURLY");  }
+"}"     				{printf("%d\t%s\t%s\n",lNum,yytext,"RIGHT_CURLY");  }
+","					{printf("%d\t%s\t%s\n",lNum,yytext,"COMMA");  }
+":"					{printf("%d\t%s\t%s\n",lNum,yytext,"COLON");  }
+"="					{printf("%d\t%s\t%s\n",lNum,yytext,"EQUAL_SIGN");  }
+"("					{printf("%d\t%s\t%s\n",lNum,yytext,"LEFT_ROUND");  }
+")"					{printf("%d\t%s\t%s\n",lNum,yytext,"RIGHT_ROUND");  }
+"["     			{printf("%d\t%s\t%s\n",lNum,yytext,"LEFT_SQUARE");  }
+"]"     			{printf("%d\t%s\t%s\n",lNum,yytext,"RIGHT_SQUARE"); }
+"!"					{printf("%d\t%s\t%s\n",lNum,yytext,"EXALAMATION");  }
+"-"					{printf("%d\t%s\t%s\n",lNum,yytext,"HYPHEN");  }
+"+"					{printf("%d\t%s\t%s\n",lNum,yytext,"PLUS");  }
+"*"					{printf("%d\t%s\t%s\n",lNum,yytext,"STAR");  }
+"/"					{printf("%d\t%s\t%s\n",lNum,yytext,"SLASH");  }
+"%"					{printf("%d\t%s\t%s\n",lNum,yytext,"PERCENT");  }
+"<"					{printf("%d\t%s\t%s\n",lNum,yytext,"LT_OP");  }
+">"					{printf("%d\t%s\t%s\n",lNum,yytext,"GT_OP");  }
 "\n"                     {lNum++;}
 {WHITESPACE}+					{ /* whitespace separates tokens */ }
 .					{ printf("Error in lexical Analysis\n"); }
