@@ -5,7 +5,7 @@ CFLAGS = -Wall -g
 all: lexer parser main
 
 main: lex.yy.c y.tab.c
-	$(CC) $(CFLAGS) lex.yy.c y.tab.c -o semantic_analyzer.out
+	$(CC) $(CFLAGS) ast.c symboltable.c lex.yy.c y.tab.c -o semantic_analyzer.out
 lexer: lexer.l
 	flex lexer.l
 parser: parser.y
