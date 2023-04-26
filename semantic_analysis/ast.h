@@ -1,10 +1,23 @@
 #ifndef AST_H
 #define AST_H
 
+typedef enum {
+    TY_UNDEFINED,
+    TY_INT,
+    TY_FLOAT,
+    TY_CHAR,
+    TY_AIO,
+    TY_AFO,
+    TY_AFT,
+    TY_ACO,
+    TY_ACT,
+    TY_FUNCTION,
+} Type;
+
 typedef struct astNode {
     int childCnt;
     struct astNode *child[55];
-    int type;
+    Type type;
     char label[200];
 } astNode;
 
@@ -14,18 +27,6 @@ typedef struct astNode {
 #include <stdlib.h>
 #include <string.h>
 #include <strings.h>
-
-/*
-    type -> 0 - int
-    type -> 1 - float
-    type -> 2 - char
-    type -> 3 - int *
-    type -> 4 - int **
-    type -> 5 - float *
-    type -> 6 - float **
-    type -> 7 - char *
-    type -> 8 - char **
-*/
 
 astNode *createNode();
 astNode *createNodeByVal(float val);

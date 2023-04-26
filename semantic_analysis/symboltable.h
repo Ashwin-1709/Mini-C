@@ -8,20 +8,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <strings.h>
-/*
-    type -> 0 - int
-    type -> 1 - float
-    type -> 2 - char
-    type -> 3 - int *
-    type -> 4 - int **
-    type -> 5 - float *
-    type -> 6 - float **
-    type -> 7 - char *
-    type -> 8 - char **
-*/
 
-int type(char *id);
-char *retype(int type);
 int vtoi(void *p);
 
 char vtoc(void *p);

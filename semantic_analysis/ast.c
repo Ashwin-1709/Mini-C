@@ -6,18 +6,6 @@
 #include <string.h>
 #include <strings.h>
 
-/*
-    type -> 0 - int
-    type -> 1 - float
-    type -> 2 - char
-    type -> 3 - int *
-    type -> 4 - int **
-    type -> 5 - float *
-    type -> 6 - float **
-    type -> 7 - char *
-    type -> 8 - char **
-*/
-
 astNode *createNode() {
     astNode *cur = (astNode *)(malloc(sizeof(astNode)));
     cur->childCnt = 0;
@@ -25,7 +13,7 @@ astNode *createNode() {
         cur->label[i] = 0;
     for (int i = 0; i < 55; i++)
         cur->child[i] = NULL;
-    cur->type = -1;
+    cur->type = TY_UNDEFINED;
     return cur;
 }
 
@@ -34,7 +22,7 @@ astNode *createNodeByVal(float val) {
     char buf[50];
     gcvt(val, 10, buf);
     strcpy(cur->label, buf);
-    cur->type = type("float");
+    cur->type = TY_FLOAT;
     return cur;
 }
 
@@ -43,7 +31,7 @@ astNode *createNodeByIntVal(int val) {
     char buf[50];
     sprintf(buf, "%d", val);
     strcpy(cur->label, buf);
-    cur->type = type("int");
+    cur->type = TY_INT;
     return cur;
 }
 
@@ -101,7 +89,7 @@ void arg_dfs(astNode *root, int *cur, int *args) {
     if (root == NULL)
         return;
     if (strcmp(root->label, "declare_var") == 0) {
-        int type = root->child[0]->type;
+        Type type = root->child[0]->type;
         args[*cur] = type;
         *cur = *cur + 1;
     }
