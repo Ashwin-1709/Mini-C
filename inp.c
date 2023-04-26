@@ -1,12 +1,28 @@
-float func(int x, int y) {
-
-}
+// void func() {
+//     int a;
+//     int b;
+//     while(a < 10) {
+//         int a = b;
+//         for(int a )
+//     }
+// }
 
 main() {
-    func(3 , 2.5);
-    a[2][3];
-     -3;
-    char c[20];
-    c = "hello world";
-    a+=b;
+    int a = 0;
+    for(int a = 0 ; a < 50 ; a = a + 1) {
+        a = 51;
+    }
+
+    int x = -1;
+    {
+        {
+            {
+                {
+                    {
+                        x = x + 1;
+                    }
+                }
+            }
+        }
+    }
 }

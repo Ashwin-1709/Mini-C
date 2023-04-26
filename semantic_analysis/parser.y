@@ -18,6 +18,7 @@
     }
 
     table* cur_table;
+    table* globalfuncs;
     astNode* semantic_stack[50];
     int cur_st = 0;
 
@@ -510,31 +511,42 @@ void process_function(astNode* root, table* cur) {
 
     astNode* func_decl = root->child[1]->child[0]->child[0];
     char *func_id = strdup(func_decl->label);
+    /* printf("func_id = %s\n", func_id); */
+    /* printf("hello123\n"); */
     astNode* param_list = root->child[1];
+    /* printf("hello\n"); */
     /* printf("p = %s %d\n", param_list->label, param_list->childCnt); */
-    if(isDeclared(func_id, cur))
+    if(searchTable(globalfuncs, func_id))
         declerr(func_id);
     if(param_list->childCnt == 4) {
         int *args = get_args(param_list->child[2]);
         insertfunc(func_id, type, cur, args , true , root);
+        insertfunc(func_id, type, globalfuncs, args , true , root);
         process_parameter_list(param_list->child[2], cur);
         /* printf("func = %s type = %d argc = %d\n", func_id , type , argc); */
-    } else insertfunc(func_id , type , cur , NULL , false, root);
+    } else{
+        insertfunc(func_id , type , cur , NULL , false, root);
+        insertfunc(func_id , type , globalfuncs , NULL , false, root);                                               
+    }
     astNode* compound_stmt = root->child[2];
     if(compound_stmt->childCnt > 2) {
-        printf("leaving func = %s\n", compound_stmt->child[1]->label);
+        /* printf("leaving func = %s\n", compound_stmt->child[1]->label); */
         init_table(compound_stmt->child[1], cur);
     }
 }
 
 void init_dec_list(astNode* root, table* cur, int type) {
-    printf("in init_decl_list label = %s\n", root->label);
+    /* printf("in init_decl_list label = %s\n", root->label); */
     if(strcmp(root->label, "init_dec") == 0) {
         char* var_id = strdup(root->child[0]->child[0]->child[0]->label);
-        printf("id added = %s\n", var_id);
-        if(searchTable(cur, var_id))
+        /* printf("id added = %s\n", var_id); */
+        if(searchTable(cur, var_id) || searchTable(globalfuncs, var_id))
             declerr(var_id);
         else {
+
+            if (root->childCnt == 3){
+                process_expression(root -> child[2], cur);
+            }
             if(root->child[0]->childCnt == 1)
                 insertvar(var_id, type, NULL, -1, -1, cur);
             else if(root->child[0]->childCnt == 4) {
@@ -546,12 +558,13 @@ void init_dec_list(astNode* root, table* cur, int type) {
                 insertvar(var_id, type, NULL, x_lim, y_lim, cur);
             }
         }
-        printf("cur scope cnt = %d\n",  cur->entryCnt);
+
+        /* printf("cur scope cnt = %d\n",  cur->entryCnt); */
         return;
     } 
 
-    if(strcmp(root->label, "expression_stmt") == 0)
-        init_table(root, cur);
+    /* if(strcmp(root->label, "expression_stmt") == 0)
+        init_table(root, cur); */
     for(int i = 0 ; i < root->childCnt; i++)
         init_dec_list(root->child[i], cur, type);
 }
@@ -559,7 +572,8 @@ void init_dec_list(astNode* root, table* cur, int type) {
 void process_expression(astNode* root , table* cur) {
     if(strcmp(root->label, "id") == 0) {
         char *id = strdup(root->child[0]->label);
-        if(!isDeclared(id, cur))
+        /* printTable(globalfuncs); */
+        if(!isDeclared(id, cur) && !searchTable(globalfuncs, id))
             undecerr(id);
         return;
     }
@@ -574,46 +588,46 @@ void process_declaration(astNode* root, table* cur) {
 }
 
 void init_table(astNode* root, table* cur_scope) {
-    printf("label = %s\n", root->label);
+    /* printf("label = %s\n", root->label); */
     if(strcmp(root->label, "func_declaration") == 0) {
-        printf("func_dec\n");
+        /* printf("func_dec\n"); */
         table* child = changeScope(cur_scope);
         process_function(root , child);
         return;
     }
 
     if(strcmp(root->label, "compound_stmt") == 0 && root->childCnt > 2) {
-        printf("compound\n");
+        /* printf("compound\n"); */
         table* child = changeScope(cur_scope);
         init_table(root->child[1], child);
         return;
     }
 
     if(strcmp(root->label, "declaration") == 0) {
-        printf("dec\n");
+        /* printf("dec\n"); */
         process_declaration(root,  cur_scope);
         return;
     }
 
     if(strcmp(root->label, "assign_stmt") == 0) {
-        printf("assgn\n");
+        /* printf("assgn\n"); */
         char* var_id = root->child[0]->child[0]->label;
         if(!searchTable(cur_scope, var_id))
             declerr(var_id);
-        printf("checking for %s\n", var_id);
+        /* printf("checking for %s\n", var_id); */
         process_expression(root->child[2], cur_scope);
         return;
     }
 
     if(strcmp(root->label, "expression_stmt") == 0) {
-        printf("expr\n");
+        /* printf("expr\n"); */
         process_expression(root, cur_scope);
         return;
     }
 
     if(strcmp(root->label, "for_stmt") == 0) {
-        printf("for_stmt\n");
-        printTable(cur_scope);
+        /* printf("for_stmt\n"); */
+        /* printTable(cur_scope); */
         table* child = changeScope(cur_scope);
         for(int i = 0 ; i < root->childCnt ; i++)
             init_table(root->child[i], child);
@@ -651,13 +665,15 @@ void printTable(table* cur) {
 
 int main() {
     cur_table = createTable();
+    globalfuncs = createTable();
     yyparse();
     astNode* root = pop();
     /* printTree(root); */
     printf("\n\n\n\n\n-------Initiating Semantic Analysis--------\n\n\n\n\n");
     init_table(root, cur_table);
     printf("\n\n\n----Semantic Analysis done----\n\n\n");
-    printTable(cur_table);
+    /* printTable(cur_table);
+    printTable(globalfuncs); */
 }
 
 int yyerror() {

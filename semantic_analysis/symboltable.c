@@ -84,7 +84,9 @@ void insertvar(char *id, Type type, void *value, int x_lim, int y_lim,
 }
 
 bool searchTable(table *cur, char *id) {
+    // printf("here = %s %d\n", id, cur->entryCnt);
     for (int i = 0; i < cur->entryCnt; i++) {
+        // printf("entry = %s\n", cur->entries[i]->id);
         if (strcmp(id, cur->entries[i]->id) == 0)
             return true;
     }
@@ -92,6 +94,7 @@ bool searchTable(table *cur, char *id) {
 }
 
 bool isDeclared(char *id, table *cur) {
+    // printf("here isdeclared = %s\n", id);
     while (cur != NULL) {
         if (searchTable(cur, id))
             return true;
@@ -123,14 +126,17 @@ void insertfunc(char *id, Type type, table *curtable, int *args, bool hasargs, a
     cur->type = type;
     cur->isfunc = true;
     int count = 0;
-    for (int j = 0; j < 50; j++) {
-        if (args[j] == 100) {
-            count = j;
-            break;
+    if(hasargs) {
+        for (int j = 0; j < 50; j++) {
+            if (args[j] == 100) {
+                count = j;
+                break;
+            }
         }
+        // printf("argcount = %d\n", count);
+        cur->x_lim = count;
     }
-    // printf("argcount = %d\n", count);
-    cur->x_lim = count;
+    else cur->x_lim = -1;
     cur->y_lim = -1;
     if (hasargs)
         cur->parameters = args;

@@ -24,9 +24,13 @@ int main() {
      * hi
      */
     float ans = 2e3 * func(1 , 2 , 3);
+    int testInteger = -1, b = 100, c = testInteger * 2;
     printf("Number = %d", testInteger);
     // 3 * 4 % 2 - 1 * 23 / -91 % 57 + 31 / 3;
     int a = ans + testInteger - 100 / (b);
+    while(a > 10 && ans == -1){
+        int x = 2;
+    }
     // (10 - 20) * 5 + 4 % 3 * (1 + 2);
     // 0 - 23 / -91 % 57 + 31 / 3;
     // 0 - 23 / -34 + 31 / 3;
