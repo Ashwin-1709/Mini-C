@@ -508,7 +508,7 @@ void process_function(astNode* root, table* cur) {
     } else insertfunc(func_id , type , cur , NULL , false, root);
 }
 
-void init_dec_list(astNode* root, table* cur, int type) {
+void init_dec_list(astNode* root, table* cur, Type type) {
     /* printf("in init_decl_list label = %s\n", root->label); */
     if(strcmp(root->label, "init_dec") == 0) {
         char* var_id = strdup(root->child[0]->child[0]->child[0]->label);
@@ -546,7 +546,7 @@ void process_expression(astNode* root , table* cur) {
 }
 
 void process_declaration(astNode* root, table* cur) {
-    int type = root->child[0]->type;
+    Type type = root->child[0]->type;
     init_dec_list(root, cur, type);
 
 }
