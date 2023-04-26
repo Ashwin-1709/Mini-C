@@ -208,21 +208,19 @@ static table* changeScope(table* cur) {
     return child;
 }
 
-static void insertfunc(char*id , int type , table *curtable , int count,...) {
-    va_list arglist;
-    int *args = (int *)malloc(sizeof(int) * count);
-    va_start(arglist, count);
-    
-    for(int i = 0 ; i < count ; i++) {
-        int now = va_arg(arglist, int);
-        args[i] = now;
-    }
-
-    va_end(arglist);
+static void insertfunc(char*id , int type , table *curtable , int *args) {
     entry* cur = (entry *)(malloc(sizeof(entry)));
     cur->id = strdup(id);
     cur->type = type;
     cur->isfunc = true;
+    int count = 0;
+    for(int j = 0 ; j < 50 ; j++) {
+        if(args[j] == 100) {
+            count = j;
+            break;
+        }
+    }
+    printf("argcount = %d\n", count);
     cur->x_lim = count;
     cur->y_lim = -1;
     cur->parameters = args;

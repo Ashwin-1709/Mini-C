@@ -104,6 +104,29 @@ static char *find_id(astNode* root) {
             return child_id;
     }
     return id;
-};
+}
+
+static void arg_dfs(astNode* root, int *cur, int *args) {
+    if(root == NULL)
+        return;
+    if(strcmp(root->label , "declare_var") == 0) {
+        int type = root->child[0]->type;
+        args[*cur] = type;
+        *cur = *cur + 1;
+    }
+    for(int i = 0 ; i < root->childCnt ; i++)
+        arg_dfs(root->child[i], cur , args);
+}
+
+static int* get_args(astNode* root) {
+    int *args = (int *)malloc(sizeof(int) * 50);
+    for(int i = 0 ; i < 50 ; i++)
+        args[i] = 100;
+    int cur_arg = 0;
+    arg_dfs(root, &cur_arg, args);
+    return args;
+}
+
+
 
 #endif
