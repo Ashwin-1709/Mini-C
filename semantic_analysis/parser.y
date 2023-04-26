@@ -80,13 +80,13 @@ functional_declaration : func_type func_declarator compound_statement {
                 }
 ;
 
-var_type : INT {$$ = passNode("int" , 0); $$->type = 0;} 
-          | CHAR {$$ = passNode("char" , 0); $$->type = 2;}
-          | FLOAT {$$ = passNode("float" , 0); $$->type = 1;}
+var_type : INT {$$ = passNode("int" , 0); $$->type = TY_INT;} 
+          | CHAR {$$ = passNode("char" , 0); $$->type = TY_CHAR;}
+          | FLOAT {$$ = passNode("float" , 0); $$->type = TY_FLOAT;}
 ;
 
 func_type : var_type {$$ = passNode("var_type" , 1 , $1); $$->type = $1->type;} 
-            | VOID {$$ = passNode("void" , 0); $$->type = 10;}
+            | VOID {$$ = passNode("void" , 0); $$->type = TY_VOID;}
 ;
 
 func_declarator : IDENTIFIER LEFT_ROUND RIGHT_ROUND  {

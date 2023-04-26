@@ -12,6 +12,7 @@ typedef enum {
     TY_ACO,
     TY_ACT,
     TY_FUNCTION,
+    TY_VOID,
 } Type;
 
 typedef struct astNode {
