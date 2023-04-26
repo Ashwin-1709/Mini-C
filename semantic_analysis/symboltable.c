@@ -182,7 +182,7 @@ table *changeScope(table *cur) {
     return child;
 }
 
-void insertfunc(char *id, int type, table *curtable, int *args, bool hasargs) {
+void insertfunc(char *id, int type, table *curtable, int *args, bool hasargs, astNode* fnode) {
     entry *cur = (entry *)(malloc(sizeof(entry)));
     cur->id = strdup(id);
     cur->type = type;
@@ -199,6 +199,6 @@ void insertfunc(char *id, int type, table *curtable, int *args, bool hasargs) {
     cur->y_lim = -1;
     if (hasargs)
         cur->parameters = args;
-    // cur->node = fnode;
+    cur->node = fnode;
     insert(cur, curtable);
 }

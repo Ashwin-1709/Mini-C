@@ -3,12 +3,17 @@
     #include "symboltable.h"
 
     void declerr(char *id) {
-        printf("Redeclaration error : \"%s\" redeclared\n", id);
+        printf("Error : \"%s\" redeclared\n", id);
         exit(0);
     }
 
     void assignError(char *id , char *type , char *exprtype) {
-        printf("Expected type of expression for %s is %s but %s found\n", id , type , exprtype);
+        printf("Error : Expected type of expression for %s is %s but %s found\n", id , type , exprtype);
+        exit(0);
+    }
+
+    void undecerr(char *id) {
+        printf("Error : \"%s\" used before declaration\n", id);
         exit(0);
     }
 
@@ -406,21 +411,30 @@ declarator_var : IDENTIFIER {
                         $$ = passNode("dec_var", 1, identifier);
                     }
 ;
-declarator_arr : IDENTIFIER LEFT_SQUARE expression_statement RIGHT_SQUARE{
+declarator_arr : IDENTIFIER LEFT_SQUARE I_CONSTANT RIGHT_SQUARE{
                         astNode* identifier = createNodeByLabel("id");
                         astNode* actual_id = createNodeByLabel($1);
                         addNode(identifier, actual_id);
                         astNode* left_square = createNodeByLabel("[");
                         astNode* right_square = createNodeByLabel("]");
-                        $$ = passNode("dec_arr", 4, identifier, left_square, $3, right_square);
+                        astNode* iconst = createNodeByLabel("I_CONST");
+                        astNode* val = createNodeByIntVal($3);
+                        addNode(iconst, val);
+                        $$ = passNode("dec_arr", 4, identifier, left_square, iconst , right_square);
                     }
-                | IDENTIFIER LEFT_SQUARE expression_statement RIGHT_SQUARE LEFT_SQUARE expression_statement RIGHT_SQUARE{
+                | IDENTIFIER LEFT_SQUARE I_CONSTANT RIGHT_SQUARE LEFT_SQUARE I_CONSTANT RIGHT_SQUARE{
                         astNode* identifier = createNodeByLabel("id");
                         astNode* actual_id = createNodeByLabel($1);
                         addNode(identifier, actual_id);
                         astNode* left_square = createNodeByLabel("[");
                         astNode* right_square = createNodeByLabel("]");
-                        $$ = passNode("dec_arr", 7, identifier, left_square, $3, right_square, left_square, $6, right_square);
+                        astNode* iconst1 = createNodeByLabel("I_CONST");
+                        astNode* val1 = createNodeByIntVal($3);
+                        addNode(iconst1, val1);
+                        astNode* iconst2 = createNodeByLabel("I_CONST");
+                        astNode* val2 = createNodeByIntVal($6);
+                        addNode(iconst2, val2);
+                        $$ = passNode("dec_arr", 7, identifier, left_square, iconst1, right_square, left_square, iconst2, right_square);
                     }
 ;
 /* While */
@@ -489,16 +503,69 @@ void process_function(astNode* root, table* cur) {
         declerr(func_id);
     if(param_list->childCnt == 4) {
         int *args = get_args(param_list->child[2]);
-        insertfunc(func_id, type, cur, args , true);
+        insertfunc(func_id, type, cur, args , true , root);
         /* printf("func = %s type = %d argc = %d\n", func_id , type , argc); */
-    } else insertfunc(func_id , type , cur , NULL , false);
+    } else insertfunc(func_id , type , cur , NULL , false, root);
+}
+
+void init_dec_list(astNode* root, table* cur, int type) {
+    /* printf("in init_decl_list label = %s\n", root->label); */
+    if(strcmp(root->label, "init_dec") == 0) {
+        char* var_id = strdup(root->child[0]->child[0]->child[0]->label);
+        /* printf("id added = %s\n", var_id); */
+        if(searchTable(cur, var_id))
+            declerr(var_id);
+        else {
+            if(root->child[0]->childCnt == 1)
+                insertvar(var_id, type, NULL, -1, -1, cur);
+            else if(root->child[0]->childCnt == 4) {
+                int x_lim = atoi(root->child[0]->child[2]->child[0]->label);
+                insertvar(var_id, type, NULL, x_lim, -1, cur);
+            } else {
+                int x_lim = atoi(root->child[0]->child[2]->child[0]->label);
+                int y_lim = atoi(root->child[0]->child[5]->child[0]->label);
+                insertvar(var_id, type, NULL, x_lim, y_lim, cur);
+            }
+        }
+        /* printf("cur scope cnt = %d\n", cur->entryCnt); */
+        return;
+    } 
+    for(int i = 0 ; i < root->childCnt; i++)
+        init_dec_list(root->child[i], cur, type);
+}
+
+void process_expression(astNode* root , table* cur) {
+    if(strcmp(root->label, "id") == 0) {
+        char *id = strdup(root->child[0]->label);
+        if(!isDeclared(id, cur))
+            undecerr(id);
+        return;
+    }
+    for(int i = 0 ; i < root->childCnt ; i++)
+        process_expression(root->child[i], cur);
+}
+
+void process_declaration(astNode* root, table* cur) {
+    int type = root->child[0]->type;
+    init_dec_list(root, cur, type);
+
 }
 
 void init_table(astNode* root, table* cur_scope) {
     if(strcmp(root->label, "func_declaration") == 0)
         process_function(root , cur_scope);
-    else if(strcmp(root->label, "compound_stmt") == 0 && root->childCnt > 2) {
-
+    if((strcmp(root->label, "compound_stmt") == 0 && root->childCnt > 2)
+        || strcmp(root->label, "for_declare") == 0)  {
+            table* child = changeScope(cur_scope);
+            init_table(root->child[0], child);
+    } 
+    else if(strcmp(root->label, "declaration") == 0) {
+        process_declaration(root, cur_scope);
+        /* printf("back to init table\n"); */
+        return;
+    } else if(strcmp(root->label, "expression_stmt") == 0 || strcmp(root->label, "assign_stmt") == 0) {
+        process_expression(root, cur_scope);
+        return;
     }
     for(int i = 0 ; i < root->childCnt ; i++)
         init_table(root->child[i], cur_scope);
@@ -509,11 +576,10 @@ int main() {
     cur_table = createTable();
     yyparse();
     astNode* root = pop();
-    printTree(root);
+    /* printTree(root); */
     printf("\n\n\n\n\n-------initiating semantic analysis--------\n\n\n\n\n");
     init_table(root, cur_table);
-    
-    /* printf("\n\n\n----Syntax Analysis done----\n\n\n"); */
+    printf("\n\n\n----Syntax Analysis done----\n\n\n");
 }
 
 int yyerror() {
