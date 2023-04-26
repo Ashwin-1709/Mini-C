@@ -26,7 +26,7 @@ typedef struct entry {
     void *value; // value
     int x_lim;   // if array then array len, if func number of parameters
     int y_lim;   // if 2D array then col lim
-    int type;    // type of var
+    Type type;   // type of var
     bool isfunc;
     int *parameters; // func parameters
     astNode *node;   // pointer to node if any
@@ -42,14 +42,14 @@ typedef struct table {
 
 table *createTable();
 void chainTable(table *parent, table *child);
-entry *createVarEntry(char *id, int type, void *value, int x_lim, int y_lim);
+entry *createVarEntry(char *id, Type type, void *value, int x_lim, int y_lim);
 void insert(entry *curentry, table *cur);
-void insertvar(char *id, int type, void *value, int x_lim, int y_lim,
+void insertvar(char *id, Type type, void *value, int x_lim, int y_lim,
                table *curtable);
 bool searchTable(table *cur, char *id);
 bool isDeclared(char *id, table *cur);
-int typevar(table *cur, char *id);
+Type typevar(table *cur, char *id);
 table *changeScope(table *cur);
-void insertfunc(char *id, int type, table *curtable, int *args, bool hasargs);
+void insertfunc(char *id, Type type, table *curtable, int *args, bool hasargs);
 
 #endif

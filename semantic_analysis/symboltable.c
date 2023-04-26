@@ -60,7 +60,7 @@ void chainTable(table *parent, table *child) {
     child->parent = parent;
 }
 
-entry *createVarEntry(char *id, int type, void *value, int x_lim, int y_lim) {
+entry *createVarEntry(char *id, Type type, void *value, int x_lim, int y_lim) {
     entry *cur = (entry *)(malloc(sizeof(entry)));
     cur->id = strdup(id);
     cur->type = type;
@@ -77,7 +77,7 @@ void insert(entry *curentry, table *cur) {
     cur->entries[c] = curentry;
 }
 
-void insertvar(char *id, int type, void *value, int x_lim, int y_lim,
+void insertvar(char *id, Type type, void *value, int x_lim, int y_lim,
                table *curtable) {
     entry *cur = createVarEntry(id, type, value, x_lim, y_lim);
     insert(cur, curtable);
@@ -100,7 +100,7 @@ bool isDeclared(char *id, table *cur) {
     return false;
 }
 
-int typevar(table *cur, char *id) {
+Type typevar(table *cur, char *id) {
     while (cur != NULL) {
         for (int i = 0; i < cur->entryCnt; i++) {
             if (strcmp(id, cur->entries[i]->id) == 0)
@@ -108,7 +108,7 @@ int typevar(table *cur, char *id) {
         }
         cur = cur->parent;
     }
-    return -1;
+    return TY_UNDEFINED;
 }
 
 table *changeScope(table *cur) {
@@ -117,7 +117,7 @@ table *changeScope(table *cur) {
     return child;
 }
 
-void insertfunc(char *id, int type, table *curtable, int *args, bool hasargs) {
+void insertfunc(char *id, Type type, table *curtable, int *args, bool hasargs) {
     entry *cur = (entry *)(malloc(sizeof(entry)));
     cur->id = strdup(id);
     cur->type = type;

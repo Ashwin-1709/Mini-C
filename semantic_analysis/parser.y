@@ -479,8 +479,8 @@ void process_function(astNode* root, table* cur) {
     /* printf("%s\n", func_type->label); */
     if(strcmp(func_type->label, "var_type") == 0)
         func_type = func_type->child[0];
-    int type = func_type->type;
-    
+    Type type = func_type->type;
+
     astNode* func_decl = root->child[1]->child[0]->child[0];
     char *func_id = strdup(func_decl->label);
     astNode* param_list = root->child[1];
@@ -512,7 +512,7 @@ int main() {
     printTree(root);
     printf("\n\n\n\n\n-------initiating semantic analysis--------\n\n\n\n\n");
     init_table(root, cur_table);
-    
+
     /* printf("\n\n\n----Syntax Analysis done----\n\n\n"); */
 }
 
