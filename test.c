@@ -6,7 +6,7 @@ float func(int a, int b, int c) {
             array[1][2] = i % 4;
     
     }
-    return (3e-4) * a / b * c;
+    return (3e-4) * i;
 }
 
 int area_round_off(int radius, float pi, char c) {
@@ -16,7 +16,7 @@ int area_round_off(int radius, float pi, char c) {
     return round;
 }
 
-char func(char c) {
+int func() {
     
 }
 
@@ -40,36 +40,38 @@ int main() {
     // a + b - c + d;
     // a + (b - c) + d;
     // -(2 + 4) + 6;
-    (F(0) || T(1) && F(2)  || F(3)  && ! F(4));
-    (F(0) || T(1) && F(2)  || F(3)  && ! F(4) >= 10 );
-    a = (a - b > 6 + d <= 2);
-    switch(x * 5) {
-        case 2 + 3 : 
-            int cur = 0;
-            while(cur < 10) {
-                cur = cur + 1;
-            }
-            break;
-        default : 
-            x = x - 1;
-    }
+    // (F(0) || T(1) && F(2)  || F(3)  && ! F(4));
+    // (F(0) || T(1) && F(2)  || F(3)  && ! F(4) >= 10 );
+    // a = (a - b > 6 + d <= 2);
+    // switch(x * 5) {
+    //     case 2 + 3 : 
+    //         int cur = 0;
+    //         while(cur < 10) {
+    //             cur = cur + 1;
+    //         }
+    //         break;
+    //     default : 
+    //         x = x - 1;
+    // }
 
-    if(x * 5) {
-        if(x * 3)
-            x = x + 1;
-        else {
-            x = x - 1;
-            float f = 1e-4;
-        }
-        if(1);
-        else a[2][2] = ((a[2][2] && a[1][1]) || 1);
-    } else {
-        printf("Oooo maaaa gawd\n");
-        switch(3 - 4 * 2 / 5) {
+    // if(x * 5) {
+    //     if(x * 3)
+    //         x = x + 1;
+    //     else {
+    //         float f = 1e-4;
+    //     }
+    //     if(1);
+    //     else a[2][2] = ((a[2][2] && a[1][1]) || 1);
+    // } else {
+    //     printf("Oooo maaaa gawd\n");
+    //     switch(3 - 4 * 2 / 5) {
             
-        }
+    //     }
+    // }
+
+    {
+
     }
-    while(cur < 10)
-        cur = cur - 2;
+    
     return 0;
 }   

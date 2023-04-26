@@ -134,6 +134,6 @@ void insertfunc(char *id, Type type, table *curtable, int *args, bool hasargs) {
     cur->y_lim = -1;
     if (hasargs)
         cur->parameters = args;
-    // cur->node = fnode;
+    cur->node = fnode;
     insert(cur, curtable);
 }
