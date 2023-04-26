@@ -16,6 +16,10 @@ int area_round_off(int radius, float pi, char c) {
     return round;
 }
 
+char func(char c) {
+    
+}
+
 int main() {
     int x = 1;
     /* hello sasasas

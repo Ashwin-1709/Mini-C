@@ -208,7 +208,7 @@ static table* changeScope(table* cur) {
     return child;
 }
 
-static void insertfunc(char*id , int type , table *curtable , int *args) {
+static void insertfunc(char*id , int type , table *curtable , int *args, bool hasargs) {
     entry* cur = (entry *)(malloc(sizeof(entry)));
     cur->id = strdup(id);
     cur->type = type;
@@ -220,10 +220,10 @@ static void insertfunc(char*id , int type , table *curtable , int *args) {
             break;
         }
     }
-    printf("argcount = %d\n", count);
+    // printf("argcount = %d\n", count);
     cur->x_lim = count;
     cur->y_lim = -1;
-    cur->parameters = args;
+    if(hasargs) cur->parameters = args;
     insert(cur , curtable);
 }
 

@@ -3,7 +3,7 @@
     #include "symboltable.h"
 
     void declerr(char *id) {
-        printf("%s redeclared\n", id);
+        printf("Redeclaration error : \"%s\" redeclared\n", id);
         exit(0);
     }
 
@@ -11,9 +11,19 @@
         printf("Expected type of expression for %s is %s but %s found\n", id , type , exprtype);
         exit(0);
     }
+
     table* cur_table;
     astNode* semantic_stack[50];
     int cur_st = 0;
+
+    void push(astNode* node) {
+        semantic_stack[cur_st++] = node;
+    }
+
+    astNode* pop() {
+        cur_st--;
+        return semantic_stack[cur_st];
+    }
 %}
 
 
@@ -52,22 +62,15 @@
 %right EXCLAMATION UNARY_MINUS
 %%
 /* Functional declarations */
-s : P  {$$ = createNodeByLabel("S"); addNode($$, $1); printTree($$);}
+s : P  {$$ = createNodeByLabel("S"); addNode($$, $1); push($$);}
 ;
 
 P : main_func {$$ = $1;}  
    | functional_declaration P {$$ = passNode("P", 2 , $1 , $2);}
 ;
 
-functional_declaration : func_type func_declarator {
-                    semantic_stack[cur_st++] = $1, semantic_stack[cur_st++] = $2;
-                    char *func_id = find_id($2);
-                    
-                }   compound_statement { 
-                    astNode* first = semantic_stack[cur_st - 2];
-                    astNode* second = semantic_stack[cur_st - 1];
-                    cur_st -= 2;
-                    $$ = passNode("func_declaration", 3 , first , second , $1); 
+functional_declaration : func_type func_declarator compound_statement { 
+                    $$ = passNode("func_declaration", 3 , $1 , $2 , $3); 
                 }
 ;
 
@@ -98,7 +101,7 @@ func_declarator : IDENTIFIER LEFT_ROUND RIGHT_ROUND  {
                 }
 ;
 
-param_list : declare_var {$$ = passNode("declare_var", 1 , $1);} 
+param_list : declare_var {$$ = passNode("param_list", 1 , $1);} 
             | declare_var COMMA param_list {
                 astNode* c = createNodeByLabel(",");
                 $$ = passNode("param_list", 3 , $1 , c , $3);
@@ -468,9 +471,48 @@ print_params : IDENTIFIER {
 ;
 %%
 
+void process_function(astNode* root, table* cur) {
+    // root is functional declaration
+    /* printf("-----entered-----\n"); */
+    /* printf("%s\n", root->label); */
+    astNode* func_type = root->child[0];
+    /* printf("%s\n", func_type->label); */
+    if(strcmp(func_type->label, "var_type") == 0)
+        func_type = func_type->child[0];
+    int type = func_type->type;
+    
+    astNode* func_decl = root->child[1]->child[0]->child[0];
+    char *func_id = strdup(func_decl->label);
+    astNode* param_list = root->child[1];
+    /* printf("p = %s %d\n", param_list->label, param_list->childCnt); */
+    if(isDeclared(func_id, cur))
+        declerr(func_id);
+    if(param_list->childCnt == 4) {
+        int *args = get_args(param_list->child[2]);
+        insertfunc(func_id, type, cur, args , true);
+        /* printf("func = %s type = %d argc = %d\n", func_id , type , argc); */
+    } else insertfunc(func_id , type , cur , NULL , false);
+}
+
+void init_table(astNode* root, table* cur_scope) {
+    if(strcmp(root->label, "func_declaration") == 0)
+        process_function(root , cur_scope);
+    else if(strcmp(root->label, "compound_stmt") == 0 && root->childCnt > 2) {
+
+    }
+    for(int i = 0 ; i < root->childCnt ; i++)
+        init_table(root->child[i], cur_scope);
+}
+
+
 int main() {
     cur_table = createTable();
     yyparse();
+    astNode* root = pop();
+    printTree(root);
+    printf("\n\n\n\n\n-------initiating semantic analysis--------\n\n\n\n\n");
+    init_table(root, cur_table);
+    
     /* printf("\n\n\n----Syntax Analysis done----\n\n\n"); */
 }
 
