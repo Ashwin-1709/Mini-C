@@ -50,7 +50,7 @@ WHITESPACE      [ \t\v\n\f]
 "printf"                {BEGIN PF;printf("%d\t%s\t%s\n",lNum,yytext,"PRINTF_TOKEN");}
 <PF>"("(\"([^"\\\n]|{ESCAPE_SEQUENCE})*\"{WHITESPACE}*)+	{pfCount+=varCount(yytext);yytext[0]="";printf("%d\t%s\t%s\n",lNum,yytext,"STRING_LITERAL");  }
 <PF>","{LETTER}{ALNUM}*	{pfCount--;yytext[0]="";printf("%d\t%s\t%s\n",lNum,yytext,"IDENTIFIER");}
-<PF>")"                   {if (pfCount==0){printf("Valid printf\n");} else {printf("Invalid printf\n");} BEGIN 0;}
+<PF>")"                   {if (pfCount==0){printf("Valid printf\n");} else {printf("Invalid printf\n");pfCount=0;} BEGIN 0;}
 {LETTER}{ALNUM}*					{printf("%d\t%s\t%s\n",lNum,yytext,"IDENTIFIER");}
  
 ("0"|{NONZERO}({DIGIT}*))				{printf("%d\t%s\t%s\n",lNum,yytext,"I_CONSTANT"); }
