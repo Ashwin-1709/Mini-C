@@ -7,6 +7,7 @@
 #include <stdlib.h>
 #include <stdarg.h>
 #include <stdbool.h>
+#include "ast.h"
 /*
     type -> 0 - int
     type -> 1 - float
@@ -120,6 +121,7 @@ typedef struct entry {
     int type; // type of var
     bool isfunc;
     int *parameters; // func parameters
+    astNode* node; // pointer to node if any
 } entry;
 
 typedef struct table {
@@ -161,6 +163,7 @@ static entry* createVarEntry(char *id, int type, void *value, int x_lim, int y_l
     cur->x_lim = x_lim;
     cur->y_lim = y_lim;
     cur->isfunc = false;
+    cur->node = NULL;
     return cur;
 }
 
@@ -224,6 +227,7 @@ static void insertfunc(char*id , int type , table *curtable , int *args, bool ha
     cur->x_lim = count;
     cur->y_lim = -1;
     if(hasargs) cur->parameters = args;
+    // cur->node = fnode;
     insert(cur , curtable);
 }
 
