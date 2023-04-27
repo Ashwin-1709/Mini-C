@@ -73,8 +73,18 @@ int main() {
     // }
 
     {
+        int i = 0;
+        for(i = 0 ; ; i = i + 1) {
+            int cur = -1 * x * func(1 , 2 , 3);
+            cur = cur - d;
+            int testInteger = cur / 10;
+            for(int j = 0 ; j < 10 ; j = j + 1) {
 
+            }
+        }
     }
+
+    int as = j / 5;
     
     return 0;
 }   

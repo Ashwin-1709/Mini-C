@@ -377,6 +377,7 @@ for_loop_assignment : assignment_statement {$$ = passNode("for_assign", 1, $1);}
 ;
 for_loop_declaration : declaration {$$ = passNode("for_declare", 1, $1);}
                        | SEMICOLON {astNode* semicolon = createNodeByLabel(";"); $$ = passNode("for_declare", 1, semicolon);}
+                       | for_loop_assignment SEMICOLON {astNode* semicolon = createNodeByLabel(";"); $$ = passNode("for_declare", 2 , $1, semicolon);}
 ;
 for_statement : FOR LEFT_ROUND for_loop_declaration expr for_loop_assignment RIGHT_ROUND statement_list{
                         astNode* for_st = createNodeByLabel("for");
@@ -486,6 +487,7 @@ print_params : IDENTIFIER {
 ;
 %%
 void init_table(astNode* root, table* cur_scope);
+void process_expression(astNode* root , table* cur);
 
 void process_parameter_list(astNode* root, table* cur) {
     if(strcmp(root->label, "declare_var") == 0) {
@@ -545,7 +547,7 @@ void init_dec_list(astNode* root, table* cur, int type) {
         else {
 
             if (root->childCnt == 3){
-                process_expression(root -> child[2], cur);
+                process_expression(root->child[2], cur);
             }
             if(root->child[0]->childCnt == 1)
                 insertvar(var_id, type, NULL, -1, -1, cur);
@@ -612,9 +614,9 @@ void init_table(astNode* root, table* cur_scope) {
     if(strcmp(root->label, "assign_stmt") == 0) {
         /* printf("assgn\n"); */
         char* var_id = root->child[0]->child[0]->label;
-        if(!searchTable(cur_scope, var_id))
-            declerr(var_id);
         /* printf("checking for %s\n", var_id); */
+        if(!isDeclared(var_id, cur_scope))
+            undecerr(var_id);
         process_expression(root->child[2], cur_scope);
         return;
     }
@@ -655,9 +657,10 @@ void init_table(astNode* root, table* cur_scope) {
 
 void printTable(table* cur) {
     printf("Childcount = %d entrycount = %d\n", cur->childCnt, cur->entryCnt);
-    for(int i = 0 ; i < cur->entryCnt; i++)
-        printf("%s ", cur->entries[i]->id);
-    printf("\n----\n");
+    if(cur->entryCnt) {
+        for(int i = 0 ; i < cur->entryCnt; i++)
+            printf("%d. id - %s | type - %d | is function - %d\n", i + 1 , cur->entries[i]->id, cur->entries[i]->type, cur->entries[i]->isfunc);
+    }
     for(int i = 0 ; i < cur->childCnt ; i++)
         printTable(cur->childTables[i]);    
 }
@@ -669,11 +672,13 @@ int main() {
     yyparse();
     astNode* root = pop();
     /* printTree(root); */
-    printf("\n\n\n\n\n-------Initiating Semantic Analysis--------\n\n\n\n\n");
+    printf("\n\n---------Initiating Semantic Analysis---------\n\n");
     init_table(root, cur_table);
-    printf("\n\n\n----Semantic Analysis done----\n\n\n");
-    /* printTable(cur_table);
-    printTable(globalfuncs); */
+    printf("\n\n---------Semantic Analysis done---------\n---------Program is semantically correct---------\n\n");
+    printf("\n\n---------Symbol Table---------\n\n");
+    printTable(cur_table);
+    printf("\n\n---------Global Function Table---------\n\n");
+    printTable(globalfuncs);
 }
 
 int yyerror() {
