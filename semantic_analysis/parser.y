@@ -890,13 +890,16 @@ void declarationTypeCheck(astNode* root, table* scope) {
 }
 
 void returnTypeCheck(astNode* root, table* scope) {
-    /* printf("func type global = %d\n", funcTypeGlobal); */
+    printf("func type global = %d\n", funcTypeGlobal);
     astNode* expr = root -> child[1];
+    printf("id = %s %d\n", expr->label, expr->childCnt);
     if(expr -> childCnt == 1) {
         if(funcTypeGlobal != TY_VOID)
-            err("Error : function returning value but of type void");
+            err("Error : function is not void, should return something\n");
     } else {
         Type type = expressionTypeCheck(expr -> child[0], scope);
+        if(funcTypeGlobal == TY_VOID)
+            err("Error : function of type void cannot return anything\n");
         if((funcTypeGlobal == TY_INT || funcTypeGlobal == TY_FLOAT) && (type != TY_INT && type != TY_FLOAT)) 
             err("Error : return does not match function type\n");
         else if(funcTypeGlobal != type && funcTypeGlobal == TY_CHAR)
