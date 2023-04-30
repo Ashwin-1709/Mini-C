@@ -5,6 +5,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <strings.h>
+#include <assert.h>
+
 /*
     type -> 0 - int
     type -> 1 - float
@@ -45,8 +47,10 @@ table *createTable() {
         cur->childTables[i] = NULL;
     cur->parent = NULL;
     cur->entryCnt = 0;
-    for (int i = 0; i < 30; i++)
+    for (int i = 0; i < 30; i++) {
         cur->entries[i] = NULL;
+        cur->visited[i] = false;
+    }
     return cur;
 }
 
@@ -114,6 +118,18 @@ Type typevar(table *cur, char *id) {
     return TY_UNDEFINED;
 }
 
+entry* getEntry(table* cur, char *id) {
+    while (cur != NULL) {
+        for (int i = 0; i < cur->entryCnt; i++) {
+            if (strcmp(id, cur->entries[i]->id) == 0)
+                return cur->entries[i];
+        }
+        cur = cur->parent;
+    }
+    assert("entry not found in symbol table");
+    return NULL;
+}
+
 table *changeScope(table *cur) {
     table *child = createTable();
     chainTable(cur, child);
@@ -142,4 +158,14 @@ void insertfunc(char *id, Type type, table *curtable, int *args, bool hasargs, a
         cur->parameters = args;
     cur->node = fnode;
     insert(cur, curtable);
+}
+
+table* nextScope(table* cur) {
+    for(int i = 0 ; i < cur->childCnt ; i++)
+        if(!cur->visited[i]) {
+            cur->visited[i] = true;
+            return cur->childTables[i];
+        }
+    assert("Cannot change scope");
+    return NULL;
 }

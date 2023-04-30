@@ -10,8 +10,8 @@ void error(char *msg) {
     exit(0);
 }
 
-%}
 
+%}
 
 DIGIT           [0-9]
 NONZERO         [1-9]

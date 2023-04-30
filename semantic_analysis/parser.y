@@ -17,10 +17,17 @@
         exit(0);
     }
 
+    void err(char *msg) {
+        printf("%s\n", msg);
+        exit(0);
+    }
+
     table* cur_table;
     table* globalfuncs;
     astNode* semantic_stack[50];
     int cur_st = 0;
+
+    Type funcTypeGlobal = TY_UNDEFINED;
 
     void push(astNode* node) {
         semantic_stack[cur_st++] = node;
@@ -489,6 +496,7 @@ print_params : IDENTIFIER {
 %%
 void init_table(astNode* root, table* cur_scope);
 void process_expression(astNode* root , table* cur);
+Type expressionTypeCheck(astNode* root, table* scope);
 
 void process_parameter_list(astNode* root, table* cur) {
     if(strcmp(root->label, "declare_var") == 0) {
@@ -554,11 +562,19 @@ void init_dec_list(astNode* root, table* cur, int type) {
                 insertvar(var_id, type, NULL, -1, -1, cur);
             else if(root->child[0]->childCnt == 4) {
                 int x_lim = atoi(root->child[0]->child[2]->child[0]->label);
-                insertvar(var_id, type, NULL, x_lim, -1, cur);
+                if(type == TY_INT)
+                    insertvar(var_id, TY_AIO, NULL, x_lim, -1, cur);
+                else if(type == TY_FLOAT)
+                    insertvar(var_id , TY_AFO, NULL, x_lim, -1 , cur);
+                else insertvar(var_id, TY_ACO, NULL, x_lim, -1, cur);
             } else {
                 int x_lim = atoi(root->child[0]->child[2]->child[0]->label);
                 int y_lim = atoi(root->child[0]->child[5]->child[0]->label);
-                insertvar(var_id, type, NULL, x_lim, y_lim, cur);
+                if(type == TY_INT)
+                    insertvar(var_id, TY_AIT, NULL, x_lim, y_lim, cur);
+                else if(type == TY_FLOAT)
+                    insertvar(var_id, TY_AFT, NULL, x_lim, y_lim, cur);
+                else insertvar(var_id, TY_ACT, NULL, x_lim, y_lim, cur);
             }
         }
 
@@ -676,10 +692,251 @@ void printTable(table* cur) {
         printTable(cur->childTables[i]);    
 }
 
-void TypeCheck(astNode* root, table* scope) {
-    if(strcmp(root->label, "declaration") == 0) {
-        
+void param_dfs(astNode *root, int *cur, int *args, table* scope) {
+    if(root == NULL)
+        return;
+    if (strcmp(root->label, "arg") == 0) {
+        /* printf("here\n"); */
+        Type type = expressionTypeCheck(root -> child[0], scope);
+        args[*cur] = type;
+        *cur = *cur + 1;
     }
+    for (int i = 0; i < root->childCnt; i++)
+        param_dfs(root->child[i], cur, args, scope);
+}
+
+int *get_params(astNode *root, table* scope) {
+    int *args = (int *)malloc(sizeof(int) * 50);
+    for (int i = 0; i < 50; i++)
+        args[i] = 100;
+    int cur_arg = 0;
+    param_dfs(root, &cur_arg, args, scope);
+    return args;
+}
+
+void CheckArray(astNode* root, table* scope) {
+    Type arrType = typevar(scope, root -> child[0] -> child[0] -> label);
+    if((arrType == TY_ACO || arrType == TY_AFO || arrType == TY_AIO) && root -> childCnt > 4) {
+        printf("Error : Invalid array access for %s(check dimensions)\n", root -> child[0] -> child[0] -> label);
+        exit(0);
+    }
+    if((arrType == TY_ACT || arrType == TY_AFT || arrType == TY_AIT) && root -> childCnt < 7) {
+        printf("Error : Invalid array access for %s(check dimensions)\n", root -> child[0] -> child[0] -> label);
+        exit(0);  
+    } 
+    
+    entry* arrayEntry = getEntry(scope, root -> child[0] -> child[0] -> label);
+    
+    int id_1 = -1, id_2 = -1;
+    id_1 = atoi(root -> child[2] -> child[0] -> label);
+    printf("id_1 : %d\n", id_1);
+    if(root-> childCnt > 4) 
+        id_2 = atoi(root -> child[5] -> child[0] -> label);
+    printf("id_2 : %d\n", id_2);
+    if(arrayEntry->y_lim == -1 && arrayEntry->x_lim == -1) {
+        printf("Error : Var %s is not an array\n", root -> child[0] -> child[0] -> label);
+        exit(0);
+    }
+    if(arrayEntry->y_lim == -1) {
+        if(id_1 >= arrayEntry->x_lim || id_1 < 0) {
+            printf("Error : Array out of bounds access at %s\n", root-> child[0] -> child[0] -> label);
+            exit(0);
+        }
+    } else {
+        if(id_1 >= arrayEntry->x_lim || id_2 >= arrayEntry->y_lim || id_1 < 0 || id_2 < 0) {
+            printf("Error : Array out of bounds access at %s\n", root-> child[0] -> child[0] -> label);
+            exit(0);
+        }
+    }
+}
+
+void argListTypeCheck(astNode* root, table* scope) {
+    int *arg = get_params(root -> child[2] , scope);
+    entry* funcEntry = getEntry(globalfuncs, root -> child[0] -> child[0] -> label);
+    int argc = 0;
+    for(int i = 0 ; i < 50 ; i++) {
+        if(arg[i] == 100) 
+            break;
+        argc++;
+    }  
+     if(argc > 0 && funcEntry->parameters == NULL)
+        err("Error : incompatible functional parameters\n"); 
+     for(int i = 0 ; i < 50 ; i++) {
+        if(arg[i] != funcEntry->parameters[i] || (arg[i] == 100 && funcEntry->parameters[i] != 100)) { 
+            if((arg[i] == TY_INT || arg[i] == TY_FLOAT) && (funcEntry->parameters[i] == TY_INT || funcEntry->parameters[i] == TY_FLOAT))
+                continue;
+            err("Error : incompatible functional parameters\n");
+        }
+    }
+}
+
+
+Type expressionTypeCheck(astNode* root, table* scope){
+    /* printf("id = %s type = %d child = %d\n", root->label, root->type, root->childCnt); */
+    if(root->childCnt == 1 && strcmp(root->label, "id") == 0)  {
+        /* printf("here id = %s\n", root->child[0]->label ); */
+        /* printf("%d\n", typevar(scope, root->child[0]->label)); */
+        return typevar(scope, root->child[0]->label);
+    }
+    if(root->childCnt == 0) {
+        /* printf("id = %s type = %d %d\n", root->label, root->type, root->childCnt); */
+        return root->type;
+    }
+    else if(root->childCnt == 1) {
+        if (strcmp(root -> child[0] -> label, "unary") == 0){
+            /* printf("id = %s type = %d %d\n", root->label, root->type, root->childCnt); */
+            Type unaryType = expressionTypeCheck(root-> child[0] -> child[1], scope);
+            if(unaryType != TY_INT && unaryType != TY_FLOAT)
+                err("Error : Incompatible type for unary expression, expected int or float\n");
+            if(strcmp(root -> child[0] -> child[0] -> label , "-") == 0)
+                return unaryType;
+            return TY_INT;
+        } else if(strcmp(root -> child[0] -> label, "assign_stmt") == 0){
+            /* printf("id = %s type = %d %d\n", root->label, root->type, root->childCnt); */
+            Type rightType = expressionTypeCheck(root -> child[0] -> child[2], scope);
+            /* printf("right = %d %s\n", rightType, root -> child[0] -> child[2] -> label); */
+            if (strcmp(root -> child[0] -> child[0] -> label, "id") == 0){
+                Type leftType = typevar(scope, root -> child[0] -> child[0] -> child[0] -> label);
+                if (leftType != rightType)
+                    err("Error : Incompatible type left side and right side of assignment\n");
+                return leftType;
+            }
+            printf("checking array\n");
+            CheckArray(root -> child[0] ->child[0], scope);
+            Type leftType = typevar(scope, root -> child[0] -> child[0] -> child [0] -> child[0] -> label);
+            if (leftType == TY_AIO || leftType == TY_AIT){
+                if (rightType != TY_INT)
+                    err("Error : Incompatible type left side and right side of assignment, Expected int or float\n");
+                return TY_INT;
+            }
+            if (leftType == TY_AFO || leftType == TY_AFT){
+                if (rightType != TY_FLOAT)
+                    err("Error : Incompatible type left side and right side of assignment, Expected int or float\n");
+                return TY_FLOAT;
+            }
+            if (leftType == TY_ACO || leftType == TY_ACT){
+                if (rightType != TY_CHAR)
+                    err("Error : Incompatible type left side and right side of assignment, Expected char\n");
+                return TY_CHAR;
+            }
+        } else if(strcmp(root -> child[0] -> label, "functional_call") == 0){
+            if(root -> child[0] -> childCnt > 3) 
+                argListTypeCheck(root -> child[0], scope);
+            return typevar(globalfuncs, root -> child[0] -> child[0] -> child[0] -> label);
+        } else if(strcmp(root -> child[0] -> label, "arr_element") == 0){
+            CheckArray(root -> child[0], scope);
+            Type leftType = typevar(scope, root -> child[0] -> child[0] -> child[0] -> label);
+            if (leftType == TY_AIO || leftType == TY_AIT){
+                return TY_INT;
+            }
+            if (leftType == TY_AFO || leftType == TY_AFT){
+                return TY_FLOAT;
+            }
+            if (leftType == TY_ACO || leftType == TY_ACT){
+                return TY_CHAR;
+            }
+        } else 
+            return expressionTypeCheck(root -> child[0], scope);
+    }
+    else if(root->childCnt == 3){
+        if(strcmp(root -> child[0] -> label, "(") == 0)
+            return expressionTypeCheck(root -> child[1], scope);
+        else {
+            Type left = expressionTypeCheck(root -> child[0], scope);
+            Type right = expressionTypeCheck(root -> child[2], scope);
+            /* printf("left = %d right = %d %s\n", left, right, root -> child[2] -> child[0] -> child[0] -> label); */
+            if (left == TY_CHAR || right == TY_CHAR || left == TY_VOID || right == TY_VOID || left == TY_UNDEFINED || right == TY_UNDEFINED || 
+                left == TY_ACO || left == TY_ACT || left == TY_AIO || left == TY_AIT || left == TY_AFO || left == TY_AFT ||
+                right == TY_ACO || right == TY_ACT || right == TY_AIO || right == TY_AIT || right == TY_AFO || right == TY_AFT){
+                err("Incompatible arithmetic with char/void/undefined/array type, expected int or float");
+            }
+            if (left == TY_FLOAT || right == TY_FLOAT){
+                return TY_FLOAT;
+            }
+            return TY_INT;
+        }
+    }
+    return TY_UNDEFINED;
+}
+
+void init_dec_type(astNode* root, table* scope, Type type) {
+    if(strcmp(root-> label , "init_dec") == 0 && root->childCnt > 1) {
+        Type exprType = expressionTypeCheck(root -> child[2], scope);
+        /* printf("Type for declaration = %d\n", exprType); */
+        if(exprType == TY_VOID || exprType == TY_UNDEFINED)
+            err("Error : incompatible types void/undefined in declaration");
+        if(exprType == TY_ACO || exprType == TY_ACT || exprType == TY_AIO || exprType == TY_AIT || exprType == TY_AFO || exprType == TY_AFT)
+            err("Error : incompatible types void/undefined in declaration");
+        if(exprType == TY_CHAR && (type == TY_INT || type == TY_FLOAT))
+            err("Error : incompatible types in declaration, expected int or float");
+        return;
+    }
+    for(int i = 0 ; i < root->childCnt ; i++)
+        init_dec_type(root -> child[i], scope, type);
+}
+
+void declarationTypeCheck(astNode* root, table* scope) {
+    Type type = root->child[0]->type;
+    init_dec_type(root, scope, type);
+}
+
+void returnTypeCheck(astNode* root, table* scope) {
+    /* printf("func type global = %d\n", funcTypeGlobal); */
+    astNode* expr = root -> child[1];
+    if(expr -> childCnt == 1) {
+        if(funcTypeGlobal != TY_VOID)
+            err("Error : function returning value but of type void");
+    } else {
+        Type type = expressionTypeCheck(expr -> child[0], scope);
+        if((funcTypeGlobal == TY_INT || funcTypeGlobal == TY_FLOAT) && (type != TY_INT && type != TY_FLOAT)) 
+            err("Error : return does not match function type\n");
+        else if(funcTypeGlobal != type && funcTypeGlobal == TY_CHAR)
+            err("Error : return does not match function type\n");
+    }
+}
+
+void TypeCheck(astNode* root, table* scope) {
+
+    if(strcmp(root -> label, "func_declaration") == 0)
+        funcTypeGlobal = root->child[0]->type;
+
+    if(strcmp(root->label, "compound_stmt") == 0 && root->childCnt > 2) {
+        /* printf("compound\n"); */
+        table* child = nextScope(scope);
+        /* printTable(child); */
+        TypeCheck(root->child[1], child);
+        return;
+    }
+
+   if(strcmp(root->label, "declaration") == 0) {
+        /* printf("dec\n"); */
+        declarationTypeCheck(root,  scope);
+        return;
+    }
+
+    if(strcmp(root->label, "expression_stmt") == 0) {
+        /* printf("expr\n"); */
+        expressionTypeCheck(root, scope);
+        return;
+    }
+
+    if(strcmp(root -> label, "return_stmt") == 0) {
+        returnTypeCheck(root, scope);
+        return;
+    }
+
+    if(strcmp(root->label, "for_stmt") == 0) {
+        /* printf("for_stmt\n"); */
+        /* printTable(cur_scope); */
+        table* child = nextScope(scope);
+        /* printTable(child); */
+        for(int i = 0 ; i < root->childCnt ; i++)
+            TypeCheck(root->child[i], child);
+        return;
+    }
+
+    for(int i = 0 ; i < root->childCnt ; i++)
+        TypeCheck(root->child[i], scope);
 }
 
 
@@ -689,13 +946,16 @@ int main() {
     yyparse();
     astNode* root = pop();
     /* printTree(root); */
-    printf("\n\n---------Initiating Semantic Analysis---------\n\n");
+    /* printf("\n\n---------Initiating Semantic Analysis---------\n\n"); */
     init_table(root, cur_table);
-    printf("\n\n---------Semantic Analysis done---------\n---------Program is semantically correct---------\n\n");
+    /* printf("\n\n---------Semantic Analysis done---------\n---------Program is semantically correct---------\n\n");
     printf("\n\n---------Symbol Table---------\n\n");
     printTable(cur_table);
     printf("\n\n---------Global Function Table---------\n\n");
-    printTable(globalfuncs);
+    printTable(globalfuncs); */
+    printf("\n\n----Initiating type check-----\n\n");
+    TypeCheck(root, cur_table);
+    printf("Type checking over\n");
 }
 
 int yyerror() {
