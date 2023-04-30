@@ -53,6 +53,7 @@ WHITESPACE      [ \t\v\n\f]
 {DIGIT}+"."{EXPONENT}?{FLOAT_SUFFIX}?			{   yylval.fval = atof(yytext); return F_CONSTANT; }
 
 (\"([^"\\\n]|{ESCAPE_SEQUENCE})*\"{WHITESPACE}*)+	{ strcpy(yylval.label, yytext); return STRING_LITERAL; }
+"'"{ESCAPE_SEQUENCE}"'"                            { strcpy(yylval.label, yytext); return CHAR_CONST;}
 
 "&&"					{ return AND_OP; }
 "||"					{ return OR_OP; }
