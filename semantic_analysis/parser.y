@@ -232,6 +232,7 @@ expression_statement : expression_statement OR_OP expression_statement  {$$ = pa
                             astNode* string_literal = createNodeByLabel("STRING_LITERAL");
                             astNode* sval = createNodeByLabel($1);
                             addNode(string_literal, sval);
+                            sval->type = TY_ACO;
                             $$ = passNode("expression_stmt", 1 , string_literal);                            
                       } 
                       | arr_element {$$ = passNode("expression_stmt" , 1 , $1);} 
@@ -663,6 +664,12 @@ void printTable(table* cur) {
     }
     for(int i = 0 ; i < cur->childCnt ; i++)
         printTable(cur->childTables[i]);    
+}
+
+void TypeCheck(astNode* root, table* scope) {
+    if(strcmp(root->label, "declaration") == 0) {
+        
+    }
 }
 
 

@@ -105,3 +105,17 @@ int *get_args(astNode *root) {
     arg_dfs(root, &cur_arg, args);
     return args;
 }
+
+bool canCombine(Type t) {
+    if(t == TY_INT || t == TY_FLOAT)
+        return true;
+    return false;
+}
+
+Type combine(Type t1, Type t2) {
+    if(!canCombine(t1) || !canCombine(t2))
+        return TY_UNDEFINED;
+    if(t1 == TY_FLOAT || t2 == TY_FLOAT)
+        return TY_FLOAT;
+    return TY_INT;
+}

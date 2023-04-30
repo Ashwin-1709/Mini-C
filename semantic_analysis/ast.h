@@ -7,6 +7,7 @@ typedef enum {
     TY_FLOAT,
     TY_CHAR,
     TY_AIO,
+    TY_AIT,
     TY_AFO,
     TY_AFT,
     TY_ACO,
@@ -39,5 +40,6 @@ astNode *passNode(char *label, int count, ...);
 char *find_id(astNode *root);
 void arg_dfs(astNode *root, int *cur, int *args);
 int *get_args(astNode *root);
-
+Type combine(Type t1, Type t2);
+bool canCombine(Type t);
 #endif
