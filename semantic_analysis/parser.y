@@ -48,7 +48,7 @@
 }
 
 %token BREAK CASE CHAR CONTINUE DEFAULT ELSE FLOAT FOR IF RETURN INT SWITCH VOID WHILE MAIN_FUNCTION
-%token <label> IDENTIFIER STRING_LITERAL
+%token <label> IDENTIFIER STRING_LITERAL CHAR_CONST
 %token <ival> I_CONSTANT 
 %token <fval> F_CONSTANT
 %token <node> AND_OP OR_OP LE_OP GE_OP EQ_OP NE_OP EQUAL_SIGN
@@ -242,6 +242,13 @@ expression_statement : expression_statement OR_OP expression_statement  {$$ = pa
                             sval->type = TY_ACO;
                             $$ = passNode("expression_stmt", 1 , string_literal);                            
                       } 
+                      | CHAR_CONST {
+                            astNode* char_literal = createNodeByLabel("CHAR_CONST");
+                            astNode* cval = createNodeByLabel($1);
+                            addNode(char_literal, cval);
+                            cval->type = TY_CHAR;
+                            $$ = passNode("expression_stmt", 1 , char_literal);    
+                      }
                       | arr_element {$$ = passNode("expression_stmt" , 1 , $1);} 
                       | IDENTIFIER {
                         astNode* identifier = createNodeByLabel("id");
@@ -862,13 +869,15 @@ Type expressionTypeCheck(astNode* root, table* scope){
 void init_dec_type(astNode* root, table* scope, Type type) {
     if(strcmp(root-> label , "init_dec") == 0 && root->childCnt > 1) {
         Type exprType = expressionTypeCheck(root -> child[2], scope);
-        /* printf("Type for declaration = %d\n", exprType); */
+        /* printf("Type for declaration = %d and type being checked %d\n", exprType, type); */
         if(exprType == TY_VOID || exprType == TY_UNDEFINED)
             err("Error : incompatible types void/undefined in declaration");
         if(exprType == TY_ACO || exprType == TY_ACT || exprType == TY_AIO || exprType == TY_AIT || exprType == TY_AFO || exprType == TY_AFT)
             err("Error : incompatible types void/undefined in declaration");
         if(exprType == TY_CHAR && (type == TY_INT || type == TY_FLOAT))
             err("Error : incompatible types in declaration, expected int or float");
+        if(type == TY_CHAR && exprType != TY_CHAR)
+            err("Error : incompatible types in declaration, expected char");
         return;
     }
     for(int i = 0 ; i < root->childCnt ; i++)

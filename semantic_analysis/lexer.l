@@ -46,7 +46,7 @@ WHITESPACE      [ \t\v\n\f]
 {LETTER}{ALNUM}*					{ strcpy(yylval.label, yytext); return IDENTIFIER;}
 
 ("0"|{NONZERO}({DIGIT}*))				{ yylval.ival = atoi(yytext); return I_CONSTANT; }
-"'"([^'\\\n]|{ESCAPE_SEQUENCE})+"'"		{ yylval.ival = atoi(yytext); return I_CONSTANT; }
+"'"[^\']"'"                            { strcpy(yylval.label, yytext); return CHAR_CONST;}
 
 {DIGIT}+{EXPONENT}{FLOAT_SUFFIX}?				{ yylval.fval = atof(yytext); return F_CONSTANT; }
 {DIGIT}*"."{DIGIT}+{EXPONENT}?{FLOAT_SUFFIX}?			{  yylval.fval = atof(yytext); return F_CONSTANT; }
