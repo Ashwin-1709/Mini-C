@@ -17,7 +17,6 @@
     }
     int pfCount=0;
 %}
- 
 DIGIT           [0-9]
 NONZERO         [1-9]
 LETTER          [a-zA-Z_]
@@ -26,7 +25,6 @@ EXPONENT        ([Ee][+-]?{DIGIT}+)
 FLOAT_SUFFIX    (f|F|l|L)
 ESCAPE_SEQUENCE (\\(['"\?\\abfnrtv]))
 WHITESPACE      [ \t\v\n\f]
- 
 %x PF
 %%
 "/*"(.|\n|\s)*"*/"                                 {for(int i =0;i<strlen(yytext);i++){if(yytext[i]=='\n'){lNum++;}}/*comment();*/ }
@@ -54,7 +52,7 @@ WHITESPACE      [ \t\v\n\f]
 {LETTER}{ALNUM}*					{printf("%d\t%s\t%s\n",lNum,yytext,"IDENTIFIER");}
  
 ("0"|{NONZERO}({DIGIT}*))				{printf("%d\t%s\t%s\n",lNum,yytext,"I_CONSTANT"); }
-"'"([^'\\\n]|{ESCAPE_SEQUENCE})+"'"		{printf("%d\t%s\t%s\n",lNum,yytext,"I_CONSTANT"); }
+"'"[^\']"'"                            {printf("%d\t%s\t%s\n",lNum,yytext,"CHAR_CONST");strcpy(yylval.label, yytext);}
  
 {DIGIT}+{EXPONENT}{FLOAT_SUFFIX}?				{printf("%d\t%s\t%s\n",lNum,yytext,"F_CONSTANT");  }
 {DIGIT}*"."{DIGIT}+{EXPONENT}?{FLOAT_SUFFIX}?			{printf("%d\t%s\t%s\n",lNum,yytext,"F_CONSTANT");  }

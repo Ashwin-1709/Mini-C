@@ -988,9 +988,9 @@ int main() {
     printTable(cur_table);
     printf("\n\n---------Global Function Table---------\n\n");
     printTable(globalfuncs); */
-    printf("\n\n----Initiating type check-----\n\n");
+    /* printf("\n\n----Initiating type check-----\n\n"); */
     TypeCheck(root, cur_table);
-    printf("Type checking over\n");
+    /* printf("Type checking over\n"); */
 }
 
 int yyerror() {

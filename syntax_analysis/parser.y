@@ -141,8 +141,8 @@ case_list_def : case_list
 ;
 case_list :  case | case_list case 
 ;
-case : CASE expression_statement COLON statement_list 
-       | CASE expression_statement COLON 
+case : CASE I_CONSTANT COLON statement_list 
+       | CASE I_CONSTANT COLON 
 ;
 default_stmt : DEFAULT COLON statement_list 
               | DEFAULT COLON 
