@@ -584,6 +584,11 @@ void process_expression(astNode* root , table* cur) {
         process_expression(root->child[i], cur);
 }
 
+void process_printf(astNode* root, table* cur) {
+    if(root->childCnt == 7)
+        process_expression(root->child[4], cur);
+}
+
 void process_declaration(astNode* root, table* cur) {
     Type type = root->child[0]->type;
     init_dec_list(root, cur, type);
@@ -634,6 +639,11 @@ void init_table(astNode* root, table* cur_scope) {
         table* child = changeScope(cur_scope);
         for(int i = 0 ; i < root->childCnt ; i++)
             init_table(root->child[i], child);
+        return;
+    }
+
+    if(strcmp(root->label, "print_stmt") == 0) {
+        process_printf(root, cur_scope);
         return;
     }
 
