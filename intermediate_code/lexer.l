@@ -48,9 +48,9 @@ WHITESPACE      [ \t\v\n\f]
 ("0"|{NONZERO}({DIGIT}*))				{ yylval.ival = atoi(yytext); return I_CONSTANT; }
 "'"([^'\\\n]|{ESCAPE_SEQUENCE})+"'"		{ yylval.ival = atoi(yytext); return I_CONSTANT; }
 
-{DIGIT}+{EXPONENT}{FLOAT_SUFFIX}?				{ yylval.fval = atof(yytext); return F_CONSTANT; }
-{DIGIT}*"."{DIGIT}+{EXPONENT}?{FLOAT_SUFFIX}?			{  yylval.fval = atof(yytext); return F_CONSTANT; }
-{DIGIT}+"."{EXPONENT}?{FLOAT_SUFFIX}?			{   yylval.fval = atof(yytext); return F_CONSTANT; }
+{DIGIT}+{EXPONENT}{FLOAT_SUFFIX}?				{ yylval.fval = (float)atof(yytext); return F_CONSTANT; }
+{DIGIT}*"."{DIGIT}+{EXPONENT}?{FLOAT_SUFFIX}?			{  yylval.fval = (float)atof(yytext); return F_CONSTANT; }
+{DIGIT}+"."{EXPONENT}?{FLOAT_SUFFIX}?			{   yylval.fval = (float)atof(yytext); return F_CONSTANT; }
 
 (\"([^"\\\n]|{ESCAPE_SEQUENCE})*\"{WHITESPACE}*)+	{ strcpy(yylval.strval, yytext); return STRING_LITERAL; }
 

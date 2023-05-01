@@ -5,3 +5,4 @@
 .vscode
 *.txt
 .venv
+**/test.c
