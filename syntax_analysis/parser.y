@@ -1,5 +1,6 @@
 %{
     #include "stdio.h"
+    #include "stdlib.h"
 %}
 
 
@@ -175,7 +176,7 @@ for_loop_declaration : declaration
                        | SEMICOLON 
                        | for_loop_assignment SEMICOLON 
 ;
-for_statement : FOR LEFT_ROUND for_loop_declaration expr for_loop_assignment RIGHT_ROUND statement_list
+for_statement : FOR LEFT_ROUND for_loop_declaration expr for_loop_assignment RIGHT_ROUND single_statement
 ;
 
 /* declaration */
@@ -194,7 +195,7 @@ declarator_arr : IDENTIFIER LEFT_SQUARE I_CONSTANT RIGHT_SQUARE
                 | IDENTIFIER LEFT_SQUARE I_CONSTANT RIGHT_SQUARE LEFT_SQUARE I_CONSTANT RIGHT_SQUARE
 ;
 /* While */
-while_statement : WHILE LEFT_ROUND expression_statement RIGHT_ROUND statement_list
+while_statement : WHILE LEFT_ROUND expression_statement RIGHT_ROUND single_statement
 ;
 
 /* Printf and scanf */

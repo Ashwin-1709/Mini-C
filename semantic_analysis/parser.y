@@ -400,7 +400,7 @@ for_loop_declaration : declaration {$$ = passNode(".for_declare", 1, $1);}
                        | SEMICOLON {astNode* semicolon = createNodeByLabel(";"); $$ = passNode(".for_declare", 1, semicolon);}
                        | for_loop_assignment SEMICOLON {astNode* semicolon = createNodeByLabel(";"); $$ = passNode(".for_declare", 2 , $1, semicolon);}
 ;
-for_statement : FOR LEFT_ROUND for_loop_declaration expr for_loop_assignment RIGHT_ROUND statement_list{
+for_statement : FOR LEFT_ROUND for_loop_declaration expr for_loop_assignment RIGHT_ROUND single_statement{
                         astNode* for_st = createNodeByLabel("for");
                         astNode* left_round = createNodeByLabel("(");
                         astNode* right_round = createNodeByLabel(")");
@@ -461,7 +461,7 @@ declarator_arr : IDENTIFIER LEFT_SQUARE I_CONSTANT RIGHT_SQUARE{
                     }
 ;
 /* While */
-while_statement : WHILE LEFT_ROUND expression_statement RIGHT_ROUND statement_list{
+while_statement : WHILE LEFT_ROUND expression_statement RIGHT_ROUND single_statement{
                         astNode* while_st = createNodeByLabel("while");
                         astNode* left_round = createNodeByLabel("(");
                         astNode* right_round = createNodeByLabel(")");
@@ -748,10 +748,10 @@ void CheckArray(astNode* root, table* scope) {
     
     int id_1 = -1, id_2 = -1;
     id_1 = atoi(root -> child[2] -> child[0] -> label);
-    printf("id_1 : %d\n", id_1);
+    /* printf("id_1 : %d\n", id_1); */
     if(root-> childCnt > 4) 
         id_2 = atoi(root -> child[5] -> child[0] -> label);
-    printf("id_2 : %d\n", id_2);
+    /* printf("id_2 : %d\n", id_2); */
     if(arrayEntry->y_lim == -1 && arrayEntry->x_lim == -1) {
         printf("Error : Var %s is not an array\n", root -> child[0] -> child[0] -> label);
         exit(0);
@@ -778,6 +778,8 @@ void argListTypeCheck(astNode* root, table* scope) {
             break;
         argc++;
     }  
+     if(argc == 0 && funcEntry->parameters != NULL)
+        err("Error : incompatible functional parameters\n");
      if(argc > 0 && funcEntry->parameters == NULL)
         err("Error : incompatible functional parameters\n"); 
      for(int i = 0 ; i < 50 ; i++) {
@@ -811,18 +813,18 @@ Type expressionTypeCheck(astNode* root, table* scope){
                 return unaryType;
             return TY_INT;
         } else if(strcmp(root -> child[0] -> label, ".assign_stmt") == 0){
-            /* printf("id = %s type = %d %d\n", root->label, root->type, root->childCnt); */
             Type rightType = expressionTypeCheck(root -> child[0] -> child[2], scope);
             /* printf("right = %d %s\n", rightType, root -> child[0] -> child[2] -> label); */
             if (strcmp(root -> child[0] -> child[0] -> label, ".id") == 0){
                 Type leftType = typevar(scope, root -> child[0] -> child[0] -> child[0] -> label);
+                /* printf("left = %d\n", leftType); */
                 if((leftType == TY_INT || leftType == TY_FLOAT) && (rightType == TY_INT || rightType == TY_FLOAT))
                     return leftType;
                 if (leftType != rightType)
                     err("Error : Incompatible type left side and right side of assignment\n");
                 return leftType;
             }
-            printf("checking array\n");
+            /* printf("checking array\n"); */
             CheckArray(root -> child[0] ->child[0], scope);
             Type leftType = typevar(scope, root -> child[0] -> child[0] -> child [0] -> child[0] -> label);
             if (leftType == TY_AIO || leftType == TY_AIT){
@@ -841,8 +843,7 @@ Type expressionTypeCheck(astNode* root, table* scope){
                 return TY_CHAR;
             }
         } else if(strcmp(root -> child[0] -> label, ".functional_call") == 0){
-            if(root -> child[0] -> childCnt > 3) 
-                argListTypeCheck(root -> child[0], scope);
+            argListTypeCheck(root -> child[0], scope);
             return typevar(globalfuncs, root -> child[0] -> child[0] -> child[0] -> label);
         } else if(strcmp(root -> child[0] -> label, ".arr_element") == 0){
             CheckArray(root -> child[0], scope);
@@ -900,6 +901,7 @@ void init_dec_type(astNode* root, table* scope, Type type) {
 
 void declarationTypeCheck(astNode* root, table* scope) {
     Type type = root->child[0]->type;
+    /* printf("Type to check = %d\n", type); */
     init_dec_type(root, scope, type);
 }
 
@@ -988,9 +990,10 @@ int main() {
     printf("\n\n---------Global Function Table---------\n\n");
     printTable(globalfuncs); */
     /* printf("\n\n----Initiating type check-----\n\n"); */
+    /* printTable(cur_table); */
     TypeCheck(root, cur_table);
     /* resetTables(cur_table); */
-    printTree(root);
+    /* printTree(root); */
     /* printf("\n\n----Type check done-----\n\n"); */
 }
 

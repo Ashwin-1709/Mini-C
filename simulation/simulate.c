@@ -83,17 +83,104 @@ bool isCharconst(astNode* root) {
     return false; 
 }
 
-value simulateExpression(astNode* root, table* scope) {
-    value curVal;
+node *simulateUnary(astNode* root, table* scope) {
+    node* curVal = simulateExpression(root -> child[1], scope);
+    if(strcmp(root -> child[0] -> label, "-") == 0) {
+        if(curVal == TY_INT)
+            curVal->val.ival = -curVal->val.ival;
+        else if(curVal == TY_FLOAT) 
+            curVal->val.fval = -curVal->val.fval;
+    } else {
+        if(curVal -> type == TY_INT)
+            curVal -> val.ival = !(curVal -> val.ival);
+        else curVal -> val.fval = !(curVal -> val.fval);
+        curVal -> type = TY_INT;
+        return curVal;
+    }
+}
+
+node* simulateIdentifier(astNode* root, table* scope){
+    node* id = (node *)(malloc(sizeof(node)));
+    id -> type = root -> child[0] -> type;
+    if (root -> child[0] -> type == TY_INT){
+        id -> val.ival = 
+    }
+}
+
+node* simulateArrElement(astNode* root, table* scope){
+    node* id = simulateIdentifier(root -> child[0], scope);
+    node* idx1 = (node *)(malloc(sizeof(node)));
+    idx1 -> val.ival = atoi(root -> child[2] -> child[0] -> label);
+    idx1 -> type = TY_INT;
+    if (root -> childCnt == 7){
+        node* idx2 = (node *)(malloc(sizeof(node)));
+        idx2 -> val.ival = atoi(root -> child[5] -> child[0] -> label);
+        idx2 -> type = TY_INT;
+    }
+}
+
+node* simulateAssignment(astNode* root, table* scope){
+    node* right = simulateExpression(root -> child[2], scope);
+    if(isVar(root -> child[0])){
+        node* left = simulateIdentifier(root -> child[0], scope);
+    }
+    if(isArr(root -> child[0])){
+        node* left = simulateArrElement(root -> child[0], scope);
+    }
+}
+
+
+
+node* simulateExpression(astNode* root, table* scope) {
+    node* curVal = (node *)(malloc(sizeof(node)));
     if(root -> childCnt == 1) {
-        if(isIconst(root)) 
-            curVal.ival = atoi(root -> child[0] -> label);
-        if(isFconst(root))
-            curVal.fval = atof(root -> child[0] -> label);
-        if(isCharconst(root))
-            curVal.cval = root -> child[0] -> label[1];
-        if(isUnary(root)) {
-            
+        if(isIconst(root -> child[0])) {
+            curVal -> val.ival = atoi(root -> child[0] -> child[0] -> label);
+            curVal -> type = TY_INT;
+            return curVal;
         }
+        if(isFconst(root -> child[0])) {
+            curVal -> val.fval = atof(root -> child[0] -> child[0]-> label);
+            curVal -> type = TY_FLOAT;
+            return curVal;   
+        }
+        if(isCharconst(root -> child[0])) {
+            curVal -> val.cval = root -> child[0] -> label[1];
+            curVal -> type = TY_CHAR;
+            return curVal;
+        }
+        if(isUnary(root -> child[0])) {
+            simulateUnary(root -> child[0], scope);
+        }
+        if(isAssignment(root -> child[0])){
+            simulateAssignment(root -> child[0], scope);
+        }
+        if(isVar(root -> child[0])){
+            simulateIdentifier(root -> child[0], scope);
+        }
+        if(isArr(root -> child[0])){
+            simulateArrElement(root -> child[0], scope);
+        }
+        
+        
+    }
+}
+
+node* simulateIdentifier(astNode* root, table* scope) {
+    entry* entry = getEntry(scope, root -> child[0] -> label);
+    node* curVal = (node *)(malloc(sizeof(node)));
+    curVal->type = entry->type;
+    if(entry->type == TY_INT) 
+        curVal ->val.ival = vtoi(entry->value);
+    else if(entry -> type == TY_FLOAT)
+        curVal -> val.fval = vtof(entry -> value);
+    else curVal -> val.cval = vtoc(entry -> value);
+    return curVal;
+}
+
+void setValue(char *id, table* scope, Type type, void *value) {
+    entry* entry = getEntry(scope, id);
+    if(type == TY_INT) {
+        int new_val = vtoi(entry->value);
     }
 }

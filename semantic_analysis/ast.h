@@ -42,4 +42,5 @@ void arg_dfs(astNode *root, int *cur, int *args);
 int *get_args(astNode *root);
 Type combine(Type t1, Type t2);
 bool canCombine(Type t);
+void printAST(astNode* root);
 #endif

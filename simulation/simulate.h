@@ -10,8 +10,9 @@ typedef union value {
     char cval;
 } value;
 
-typedef struct node {
-    
+typedef struct node{
+    value val;
+    Type type;
 } node;
 
 bool isExpression(astNode *root);
@@ -28,6 +29,13 @@ bool isArr(astNode* root);
 bool isIconst(astNode* root);
 bool isFconst(astNode* root);
 bool isCharconst(astNode* root);
-value simulateExpression(astNode* root, table* scope);
+node *simulateExpression(astNode* root, table* scope);
+node *simulateUnary(astNode* root, table* scope);
+node *simulateIdentifier(astNode* root, table* scope);
+node *simulateArrElement(astNode* root, table* scope);
+node *simulateAssignment(astNode* root, table* scope);
+node *simulateFunctionCall(astNode* root, table* scope);
+void setValue(char *id, table* scope, Type type, void *value);
+
 
 #endif

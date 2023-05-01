@@ -1,5 +1,6 @@
 %{
-    #include "y.tab.h"    
+    #include "y.tab.h" 
+    #include "stdio.h"   
 %}
 
 DIGIT           [0-9]
