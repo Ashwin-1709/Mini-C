@@ -525,6 +525,8 @@ print_obj : IDENTIFIER {
                         addNode(char_const, val);
                         $$ = passNode("print_obj", 1 , char_const);
            }
+           | arr_element {$$ = passNode(".print_obj" , 1 , $1);} 
+
 ;
 %%
 void init_table(astNode* root, table* cur_scope);

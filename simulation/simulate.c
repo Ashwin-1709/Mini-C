@@ -172,6 +172,36 @@ void getPrintParams(astNode* root, node** arr, int* itr, table* scope){
         *itr = *itr + 1;
         return;
     }
+    if (strcmp(root -> label, ".I_CONST") == 0){
+        node* id = (node *)(malloc(sizeof(node)));
+        id -> val.ival = atoi(root -> child[0] -> label);
+        id -> type = TY_INT;
+        arr[*itr] = id;
+        *itr = *itr + 1;
+        return;
+    }
+    if (strcmp(root -> label, ".F_CONST") == 0){
+        node* id = (node *)(malloc(sizeof(node)));
+        id -> val.fval = atof(root -> child[0] -> label);
+        id -> type = TY_FLOAT;
+        arr[*itr] = id;
+        *itr = *itr + 1;
+        return;
+    }
+    if (strcmp(root -> label, ".CHAR_CONST") == 0){
+        node* id = (node *)(malloc(sizeof(node)));
+        id -> val.cval = root -> child[0] -> label[1];
+        id -> type = TY_CHAR;
+        arr[*itr] = id;
+        *itr = *itr + 1;
+        return;
+    }
+    if (strcmp(root -> label, ".arr_element") == 0){
+        node* id = simulateArrElement(root, scope);
+        arr[*itr] = id;
+        *itr = *itr + 1;
+        return;
+    }
     for(int i = 0 ; i < root -> childCnt ; i++)
         getPrintParams(root -> child[i], arr, itr, scope);
 }
@@ -264,7 +294,7 @@ node* simulateExpression(astNode* root, table* scope) {
             return curVal;   
         }
         if(isCharconst(root -> child[0])) {
-            curVal -> val.cval = root -> child[0] -> label[1];
+            curVal -> val.cval = root -> child[0] -> child[0] -> label[1];
             curVal -> type = TY_CHAR;
             return curVal;
         }
@@ -422,65 +452,76 @@ void setVar(char *id, table* scope, node* aval) {
 node* getArrayValue(char *id, table* scope, int id_1, int id_2) {
     entry* entry = getEntry(scope, id);
     node* curVal = (node *)(malloc(sizeof(node)));
-
     if(entry->type == TY_AIO) {
         curVal->type = TY_INT;
-        int *arr = (int *)entry->value;
-        curVal->val.ival = arr[id_1];
+        curVal->val.ival = entry->val.iar[id_1];
     } else if(entry->type == TY_AIT) {
         curVal->type = TY_INT;
-        int (*arr)[entry->y_lim] = (int (*)[entry->y_lim])entry->value;
-        curVal ->val.ival = arr[id_1][id_2];
+        curVal ->val.ival = entry->val.idr[id_1][id_2];
     }
     else if(entry->type == TY_AFO) {
         curVal->type = TY_FLOAT;
-        float *arr = (float *)entry->value;
-        curVal->val.fval = arr[id_1];
+        curVal->val.fval = entry->val.far[id_1];
     } else if(entry->type == TY_AFT) {
         curVal->type = TY_FLOAT;
-        float (*arr)[entry->y_lim] = (float (*)[entry->y_lim])entry->value;
-        curVal ->val.fval = arr[id_1][id_2];
+        curVal ->val.fval = entry->val.fdr[id_1][id_2];
     }
     else if(entry->type == TY_ACO) {
         curVal->type = TY_CHAR;
-        char *arr = (char *)entry->value;
-        curVal->val.cval = arr[id_1];
+        curVal->val.cval = entry->val.car[id_1];
     } else if(entry->type == TY_ACT) {
         curVal->type = TY_CHAR;
-        char (*arr)[entry->y_lim] = (char (*)[entry->y_lim])entry->value;
-        curVal ->val.cval = arr[id_1][id_2];
+        curVal ->val.cval = entry->val.cdr[id_1][id_2];
     }
     return curVal;
 }
 
 void setArrayValue(char *id, table* scope, int id_1, int id_2, node* aval) {
     entry* entry = getEntry(scope, id);
+    int ival = aval->val.ival;
+    float fval = aval->val.fval;
+    char cval = aval->val.cval;
     if(entry->type == TY_AIO) {
-        int *arr = (int *)entry->value;
-        arr[id_1] = aval -> val.ival;
-        entry->value = (void *)&arr;
-    } else if(entry->type == TY_AIT) {
-        int (*arr)[entry->y_lim] = (int (*)[entry->y_lim])entry->value;
-        arr[id_1][id_2] = aval -> val.ival;
-        entry->value = (void *)&arr;
+        if(aval->type == TY_INT)
+            entry ->val.iar[id_1] = ival;
+        else if(aval->type == TY_FLOAT)
+            entry->val.iar[id_1] = (int)fval;
+        else entry->val.iar[id_1] = (int)cval;
+    }
+    else if(entry->type == TY_AIT) {
+        if(aval->type == TY_INT)
+            entry ->val.idr[id_1][id_2] = ival;
+        else if(aval->type == TY_FLOAT)
+            entry->val.idr[id_1][id_2] = (int)fval;
+        else entry->val.idr[id_1][id_2] = (int)cval;
     }
     else if(entry->type == TY_AFO) {
-        float *arr = (float *)entry->value;
-        arr[id_1] = aval -> val.fval;
-        entry->value = (void *)&arr;
-    } else if(entry->type == TY_AFT) {
-        float (*arr)[entry->y_lim] = (float (*)[entry->y_lim])entry->value;
-        arr[id_1][id_2] = aval -> val.fval;
-        entry->value = (void *)&arr;
+        if(aval->type == TY_INT)
+            entry ->val.far[id_1] = (float)ival;
+        else if(aval->type == TY_FLOAT)
+            entry->val.far[id_1] = fval;
+        else entry->val.far[id_1] = (float)cval;
+    }
+    else if(entry->type == TY_AFT) {
+        if(aval->type == TY_INT)
+            entry ->val.fdr[id_1][id_2] = (float)ival;
+        else if(aval->type == TY_FLOAT)
+            entry->val.fdr[id_1][id_2] = fval;
+        else entry->val.fdr[id_1][id_2] = (float)cval;
     }
     else if(entry->type == TY_ACO) {
-        char *arr = (char *)entry->value;
-        arr[id_1] = aval -> val.cval;
-        entry->value = (void *)&arr;
-    } else if(entry->type == TY_ACT) {
-        char (*arr)[entry->y_lim] = (char (*)[entry->y_lim])entry->value;
-        arr[id_1][id_2] = aval ->val.cval;
-        entry->value = (void *)&arr;
+        if(aval->type == TY_INT)
+            entry ->val.car[id_1] = (char)ival;
+        else if(aval->type == TY_FLOAT)
+            entry->val.car[id_1] = (char)fval;
+        else entry->val.car[id_1] = cval;
+    }
+    else if(entry->type == TY_ACT) {
+        if(aval->type == TY_INT)
+            entry ->val.cdr[id_1][id_2] = (char)ival;
+        else if(aval->type == TY_FLOAT)
+            entry->val.cdr[id_1][id_2] = (char)fval;
+        else entry->val.cdr[id_1][id_2] = cval;
     }
 }
 
@@ -582,49 +623,6 @@ node* simulateExpr(astNode* root, table* scope) {
     }
     return result;
 }
-
-// void simulateForStatement(astNode* root, table* scope) {
-//     table* child = nextScope(scope);
-//     printf("%d\n", child -> childCnt);
-//     simulateForDeclaration(root -> child[2], child);
-//     table* grandchild = nextScope(child);
-//     while (1) {
-//         node* expr = simulateExpr(root -> child[3], child);
-//         if (expr -> type == TY_INT && expr -> val.ival) { 
-//             simulateStatement(root -> child[6], grandchild);
-//             simulateForAssignment(root -> child[4], grandchild);
-//         }
-//         else if (expr -> type == TY_FLOAT && expr -> val.fval != 0) {
-//             simulateStatement(root -> child[6], grandchild);
-//             simulateForAssignment(root -> child[4], grandchild);
-//         }
-//         else{
-//             resetTables(grandchild);
-//             break;
-//         }
-//         resetTables(grandchild);
-//     }
-//     resetTables(child);
-// }
-
-// void simulateForDeclaration(astNode* root, table* scope) {
-//     int declType = root -> childCnt;
-//     if (declType == 1) {
-//         char* str = root -> child[0] ->label;
-//         if (strcmp(str, ";") != 0) findInitDec (root -> child[0], scope);
-//     }
-//     else simulateForAssignment(root -> child[0], scope);
-// }
-
-// void simulateForAssignment(astNode* root, table* scope) {
-//     int childCnt = root -> childCnt;
-//     if (childCnt > 0) {
-//         node* assignment = simulateAssignment(root -> child[0], scope);
-//         if (childCnt > 1) {
-//             simulateForAssignment(root -> child[2], scope);
-//         }
-//     }
-// }
 
 void simulateForAssignment(astNode* root, table* scope) {
     if(root -> childCnt == 1) 

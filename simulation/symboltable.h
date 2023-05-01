@@ -13,6 +13,12 @@ typedef union value {
     int ival;
     float fval;
     char cval;
+    int iar[100];
+    float far[100];
+    char car[100];
+    int idr[100][100];
+    float fdr[100][100];
+    char cdr[100][100];
 } value;
 
 int vtoi(void *p);

@@ -525,6 +525,7 @@ print_obj : IDENTIFIER {
                         addNode(char_const, val);
                         $$ = passNode("print_obj", 1 , char_const);
            }
+           | arr_element {$$ = passNode(".print_obj" , 1 , $1);} 
 ;
 %%
 void init_table(astNode* root, table* cur_scope);
@@ -1027,21 +1028,9 @@ int main() {
     globalfuncs = createTable();
     yyparse();
     astNode* root = pop();
-    /* printf("\n\n---------Initiating Semantic Analysis---------\n\n"); */
     init_table(root, cur_table);
-    /* printf("\n\n---------Semantic Analysis done---------\n---------Program is semantically correct---------\n\n");
-    printf("\n\n---------Symbol Table---------\n\n");
-    printTable(cur_table);
-    printf("\n\n---------Global Function Table---------\n\n");
-    printTable(globalfuncs); */
-    /* printf("\n\n----Initiating type check-----\n\n"); */
-    /* printTable(cur_table); */
-    /* TypeCheck(root, cur_table); */
     resetTables(cur_table);
-    /* printTree(root); */
     simulateProgram(root, cur_table);
-    /* printTable(cur_table); */
-    printf("\n\n----simulation done-----\n\n");
 }
 
 int yyerror() {

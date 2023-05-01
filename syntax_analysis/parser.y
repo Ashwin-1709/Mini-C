@@ -205,7 +205,7 @@ print_statement : PRINTF_TOKEN LEFT_ROUND STRING_LITERAL RIGHT_ROUND SEMICOLON
 print_params : print_obj 
             | print_obj COMMA print_params 
 ;
-print_obj : IDENTIFIER | I_CONSTANT | F_CONSTANT | STRING_LITERAL | CHAR_CONST
+print_obj : IDENTIFIER | I_CONSTANT | F_CONSTANT | STRING_LITERAL | CHAR_CONST | arr_element
 ;
 %%
 
