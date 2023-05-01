@@ -13,6 +13,9 @@ void yyerror(char const *s) {
 int ic_idx = 0;
 int temp_var = 1;
 int is_for = 0;
+int is_while = 0;
+int is_for_1 = 0;
+uint print_num = 0;
 
 Stack *ifstack, *whilestack, *forstack;
 uint ifIdx = 1, whileIdx = 1, forIdx = 1;
@@ -189,11 +192,21 @@ single_statement : switch_statment { $$ = passNode("single_stmt", 1, $1); }
 jump_statement : BREAK SEMICOLON {
     astNode* breakNode = createNodeByLabel("break");
     astNode* semicolon = createNodeByLabel(";");
+    if (is_for_1) {
+        printf("goto FL%d\n", is_for_1);
+    } else {
+        printf("goto WL%d\n", is_while);
+    }
     $$ = passNode("jump_stmt", 2, breakNode, semicolon);
 }
 | CONTINUE SEMICOLON {
     astNode* continueNode = createNodeByLabel("continue");
     astNode* semicolon = createNodeByLabel(";");
+    if (is_for_1) {
+        printf("goto FL%d\n", is_for_1 - 1);
+    } else {
+        printf("goto WL%d\n", is_while - 1);
+    }
     $$ = passNode("jump_stmt", 2, continueNode, semicolon);
 }
 ;
@@ -550,24 +563,24 @@ default_stmt : DEFAULT COLON statement_list {
 
 /* if else */
 if_statement: IF LEFT_ROUND expression_statement {
-    printf("if !(t%d) goto L%d\n", $3->tIdx, ifIdx);
+    printf("if !(t%d) goto IL%d\n", $3->tIdx, ifIdx);
     stackPush(ifstack, ifIdx++);
 } RIGHT_ROUND single_statement {
     unsigned int lbl = stackPop(ifstack);
-    printf("goto L%d\n", ifIdx);
+    printf("goto IL%d\n", ifIdx);
     stackPush(ifstack, ifIdx++);
-    printf("\nL%d:\n", lbl);
+    printf("IL%d:\n", lbl);
 } else_clause {
     astNode* if_st = createNodeByLabel("if");
     astNode* left_round = createNodeByLabel("(");
     astNode* right_round = createNodeByLabel(")");
     $$ = passNode("if_stmt", 6, if_st, left_round, $3, right_round, $6, $8);
+    printf("IL%d:\n", stackPop(ifstack));
 }
 ;
 else_clause : ELSE single_statement {
     astNode* else_st = createNodeByLabel("else");
     $$ = passNode("else_clause", 2, else_st, $2);
-    printf("\nL%d:\n", stackPop(ifstack));
 }
 | {
     $$ = passNode("else_clause", 0);
@@ -575,29 +588,33 @@ else_clause : ELSE single_statement {
 ;
 /* For loop */
 for_loop_assignment : assignment_statement { $$ = passNode("for_assign", 1, $1); }
-                    | assignment_statement COMMA for_loop_assignment{
-                            astNode* comma = createNodeByLabel(", ");
-                            $$ = passNode("for_assign", 3, $1, comma, $3);
-                        }
-                    | { $$ = passNode("for_assign", 0); }
+| assignment_statement COMMA for_loop_assignment {
+    astNode* comma = createNodeByLabel(", ");
+    $$ = passNode("for_assign", 3, $1, comma, $3);
+}
+| { $$ = passNode("for_assign", 0); }
 ;
 for_loop_declaration : declaration { $$ = passNode("for_declare", 1, $1); }
-                       | SEMICOLON {astNode* semicolon = createNodeByLabel(";"); $$ = passNode("for_declare", 1, semicolon); }
+| SEMICOLON { astNode* semicolon = createNodeByLabel(";"); $$ = passNode("for_declare", 1, semicolon); }
 ;
 for_statement : FOR LEFT_ROUND for_loop_declaration {
-    printf("\nL%d:\n", forIdx);
+    printf("FL%d:\n", forIdx);
     stackPush(forstack, forIdx+1);
     stackPush(forstack, forIdx++);
     stackPush(forstack, forIdx++);
-} expr { printf("if !(t%d) goto L%d;\n", $5->tIdx, stackPop(forstack)); is_for++; }
-for_loop_assignment {
+} expr {
+    printf("if !(t%d) goto FL%d;\n", $5->tIdx, stackPop(forstack));
+    is_for++;
+} for_loop_assignment {
     charStackPush(loops, globalFor);
     memset(globalFor, '\0', sizeof(globalFor[0]));
     is_for--;
+    is_for_1 = forIdx - 1;
 } RIGHT_ROUND single_statement {
+    is_for_1 -= 2;
     printf("%s\n", charStackPop(loops));
-    printf("goto L%d\n", stackPop(forstack));
-    printf("L%d:\n", stackPop(forstack));
+    printf("goto FL%d\n", stackPop(forstack));
+    printf("FL%d:\n", stackPop(forstack));
     astNode* for_st = createNodeByLabel("for");
     astNode* left_round = createNodeByLabel("(");
     astNode* right_round = createNodeByLabel(")");
@@ -661,15 +678,17 @@ declarator_arr : IDENTIFIER LEFT_SQUARE I_CONSTANT RIGHT_SQUARE{
 ;
 /* While */
 while_statement : WHILE {
-    printf("L%d:\n", whileIdx);
+    printf("WL%d:\n", whileIdx);
     stackPush(whilestack, whileIdx+1);
     stackPush(whilestack, whileIdx++);
     stackPush(whilestack, whileIdx++);
 } LEFT_ROUND expression_statement RIGHT_ROUND {
-    printf("if (!t%d) goto L%d;\n", $4->tIdx, stackPop(whilestack));
+    is_while = whileIdx - 1;
+    printf("if (!t%d) goto WL%d;\n", $4->tIdx, stackPop(whilestack));
 } single_statement {
-    printf("goto L%d;\n", stackPop(whilestack));
-    printf("L%d:\n", stackPop(whilestack));
+    is_while -= 2;
+    printf("goto WL%d;\n", stackPop(whilestack));
+    printf("WL%d:\n", stackPop(whilestack));
     astNode* while_st = createNodeByLabel("while");
     astNode* left_round = createNodeByLabel("(");
     astNode* right_round = createNodeByLabel(")");
@@ -679,6 +698,7 @@ while_statement : WHILE {
 
 /* Printf and scanf */
 print_statement : PRINTF_TOKEN LEFT_ROUND STRING_LITERAL RIGHT_ROUND SEMICOLON{
+    printf("printf %s\n", $3);
     astNode* printf_tk = createNodeByLabel("printf");
     astNode* left_round = createNodeByLabel("(");
     astNode* string_lit = createNodeByLabel("string");
@@ -687,8 +707,8 @@ print_statement : PRINTF_TOKEN LEFT_ROUND STRING_LITERAL RIGHT_ROUND SEMICOLON{
     astNode* right_round = createNodeByLabel(")");
     astNode* semicolon = createNodeByLabel(";");
     $$ = passNode("print_stmt", 5, printf_tk, left_round, string_lit, right_round, semicolon);
-}
-| PRINTF_TOKEN LEFT_ROUND STRING_LITERAL COMMA print_params RIGHT_ROUND SEMICOLON{
+} | PRINTF_TOKEN LEFT_ROUND STRING_LITERAL COMMA print_params RIGHT_ROUND SEMICOLON {
+    printf("printf %s, %d\n", $3, print_num);
     astNode* printf_tk = createNodeByLabel("printf");
     astNode* left_round = createNodeByLabel("(");
     astNode* string_lit = createNodeByLabel("string");
@@ -701,12 +721,16 @@ print_statement : PRINTF_TOKEN LEFT_ROUND STRING_LITERAL RIGHT_ROUND SEMICOLON{
 }
 ;
 print_params : IDENTIFIER {
+    print_num++;
+    printf("push %s\n", $1);
     astNode* identifier = createNodeByLabel("id");
     astNode* actual_id = createNodeByLabel($1);
     addNode(identifier, actual_id);
     $$ = passNode("print_params", 1, identifier);
 }
 | IDENTIFIER COMMA print_params {
+    print_num++;
+    printf("push %s\n", $1);
     astNode* identifier = createNodeByLabel("id");
     astNode* actual_id = createNodeByLabel($1);
     addNode(identifier, actual_id);
