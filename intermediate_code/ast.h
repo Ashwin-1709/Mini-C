@@ -20,7 +20,7 @@ typedef struct astNode {
     struct astNode *child[55];
     Type type;
     char label[200];
-    int tIdx;
+    unsigned int tIdx;
     char varname[50];
 } astNode;
 
