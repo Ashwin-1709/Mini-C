@@ -450,7 +450,20 @@ expression_statement : expression_statement OR_OP expression_statement {
     $$ = passNode(".expression_stmt", 1 , char_literal);    
     $$->tIdx = temp_var++;
 }
-| arr_element { $$ = passNode(".expression_stmt", 1, $1); }
+| arr_element {
+    char *array = $1->child[0]->child[0]->label;
+    char *index = $1->child[2]->child[0]->label;
+    if (!is_for) {
+        printf("\tt%d = %s[%s]\n", temp_var, array, index);
+    } else {
+        char* buf = calloc(30, sizeof(char));
+        sprintf(buf, "\tt%d = %s[%s]\n", temp_var, array, index);
+        strcat(globalFor, buf);
+    }
+    astNode* equalto = createNodeByLabel(".=");
+    $$ = passNode(".expression_stmt", 1, $1);
+    $$->tIdx = temp_var++;
+}
 | IDENTIFIER {
   astNode* identifier = createNodeByLabel(".id");
   astNode* actual_id = createNodeByLabel($1);
@@ -529,7 +542,6 @@ assignment_statement : IDENTIFIER EQUAL_SIGN expression_statement %prec EQUAL_SI
     astNode* actual_id = createNodeByLabel($1);
     addNode(identifier, actual_id);
     astNode* equalto = createNodeByLabel(".=");
-    $$ = passNode(".assign_stmt", 3, identifier, equalto, $3);
     if (!is_for) {
         printf("\t%s := t%d\n", $1, $3->tIdx);
     } else {
@@ -537,11 +549,22 @@ assignment_statement : IDENTIFIER EQUAL_SIGN expression_statement %prec EQUAL_SI
         sprintf(buf, "\t%s := t%d\n", $1, $3->tIdx);
         strcat(globalFor, buf);
     }
+    $$ = passNode(".assign_stmt", 3, identifier, equalto, $3);
     $$->tIdx = $3->tIdx;
 }
-| arr_element EQUAL_SIGN expression_statement %prec EQUAL_SIGN{
+| arr_element EQUAL_SIGN expression_statement %prec EQUAL_SIGN {
+    char *array = $1->child[0]->child[0]->label;
+    char *index = $1->child[2]->child[0]->label;
     astNode* equalto = createNodeByLabel(".=");
+    if (!is_for) {
+        printf("\t%s[%s] = t%d\n", array, index, $3->tIdx);
+    } else {
+        char* buf = calloc(30, sizeof(char));
+        sprintf(buf, "\t%s[%s] = t%d\n", array, index, $3->tIdx);
+        strcat(globalFor, buf);
+    }
     $$ = passNode(".assign_stmt", 3, $1, equalto, $3);
+    $$->tIdx = $3->tIdx;
 }
 ;
 
