@@ -278,7 +278,7 @@ expression_statement : expression_statement OR_OP expression_statement {
         printf("\tt%d := t%d < t%d\n", temp_var, $1->tIdx, $3->tIdx);
     } else {
         char* buf = calloc(30, sizeof(char));
-        sprintf(buf, "	t%d := t%d < t%d\n", temp_var, $1->tIdx, $3->tIdx);
+        sprintf(buf, "\tt%d := t%d < t%d\n", temp_var, $1->tIdx, $3->tIdx);
         strcat(globalFor, buf);
     }
     $$->tIdx = temp_var++;
@@ -289,7 +289,7 @@ expression_statement : expression_statement OR_OP expression_statement {
         printf("\tt%d := t%d >= t%d\n", temp_var, $1->tIdx, $3->tIdx);
     } else {
         char* buf = calloc(30, sizeof(char));
-        sprintf(buf, "	t%d := t%d >= t%d\n", temp_var, $1->tIdx, $3->tIdx);
+        sprintf(buf, "\tt%d := t%d >= t%d\n", temp_var, $1->tIdx, $3->tIdx);
         strcat(globalFor, buf);
     }
     $$->tIdx = temp_var++;
@@ -300,7 +300,7 @@ expression_statement : expression_statement OR_OP expression_statement {
         printf("\tt%d := t%d <= t%d\n", temp_var, $1->tIdx, $3->tIdx);
     } else {
         char* buf = calloc(30, sizeof(char));
-        sprintf(buf, "	t%d := t%d <= t%d\n", temp_var, $1->tIdx, $3->tIdx);
+        sprintf(buf, "\tt%d := t%d <= t%d\n", temp_var, $1->tIdx, $3->tIdx);
         strcat(globalFor, buf);
     }
     $$->tIdx = temp_var++;
@@ -311,7 +311,7 @@ expression_statement : expression_statement OR_OP expression_statement {
         printf("\tt%d := t%d + t%d\n", temp_var, $1->tIdx, $3->tIdx);
     } else {
         char* buf = calloc(30, sizeof(char));
-        sprintf(buf, "	t%d := t%d + t%d\n", temp_var, $1->tIdx, $3->tIdx);
+        sprintf(buf, "\tt%d := t%d + t%d\n", temp_var, $1->tIdx, $3->tIdx);
         strcat(globalFor, buf);
     }
     $$->tIdx = temp_var++;
@@ -322,7 +322,7 @@ expression_statement : expression_statement OR_OP expression_statement {
         printf("\tt%d := t%d - t%d\n", temp_var, $1->tIdx, $3->tIdx);
     } else {
         char* buf = calloc(30, sizeof(char));
-        sprintf(buf, "	t%d := t%d - t%d\n", temp_var, $1->tIdx, $3->tIdx);
+        sprintf(buf, "\tt%d := t%d - t%d\n", temp_var, $1->tIdx, $3->tIdx);
         strcat(globalFor, buf);
     }
     $$->tIdx = temp_var++;
@@ -333,7 +333,7 @@ expression_statement : expression_statement OR_OP expression_statement {
         printf("\tt%d := t%d * t%d\n", temp_var, $1->tIdx, $3->tIdx);
     } else {
         char* buf = calloc(30, sizeof(char));
-        sprintf(buf, "	t%d := t%d * t%d\n", temp_var, $1->tIdx, $3->tIdx);
+        sprintf(buf, "\tt%d := t%d * t%d\n", temp_var, $1->tIdx, $3->tIdx);
         strcat(globalFor, buf);
     }
     $$->tIdx = temp_var++;
@@ -344,7 +344,7 @@ expression_statement : expression_statement OR_OP expression_statement {
         printf("\tt%d := t%d / t%d\n", temp_var, $1->tIdx, $3->tIdx);
     } else {
         char* buf = calloc(30, sizeof(char));
-        sprintf(buf, "	t%d := t%d / t%d\n", temp_var, $1->tIdx, $3->tIdx);
+        sprintf(buf, "\tt%d := t%d / t%d\n", temp_var, $1->tIdx, $3->tIdx);
         strcat(globalFor, buf);
     }
     $$->tIdx = temp_var++;
@@ -355,7 +355,7 @@ expression_statement : expression_statement OR_OP expression_statement {
         printf("\tt%d := t%d %% t%d\n", temp_var, $1->tIdx, $3->tIdx);
     } else {
         char* buf = calloc(30, sizeof(char));
-        sprintf(buf, "	t%d := t%d %% t%d\n", temp_var, $1->tIdx, $3->tIdx);
+        sprintf(buf, "\tt%d := t%d %% t%d\n", temp_var, $1->tIdx, $3->tIdx);
         strcat(globalFor, buf);
     }
     $$->tIdx = temp_var++;
@@ -366,7 +366,7 @@ expression_statement : expression_statement OR_OP expression_statement {
         printf("\tt%d := t%d == t%d\n", temp_var, $1->tIdx, $3->tIdx);
     } else {
         char* buf = calloc(30, sizeof(char));
-        sprintf(buf, "	t%d := t%d == t%d\n", temp_var, $1->tIdx, $3->tIdx);
+        sprintf(buf, "\tt%d := t%d == t%d\n", temp_var, $1->tIdx, $3->tIdx);
         strcat(globalFor, buf);
     }
     $$->tIdx = temp_var++;
@@ -377,7 +377,7 @@ expression_statement : expression_statement OR_OP expression_statement {
         printf("\tt%d := t%d != t%d\n", temp_var, $1->tIdx, $3->tIdx);
     } else {
         char* buf = calloc(30, sizeof(char));
-        sprintf(buf, "	t%d := t%d != t%d\n", temp_var, $1->tIdx, $3->tIdx);
+        sprintf(buf, "\tt%d := t%d != t%d\n", temp_var, $1->tIdx, $3->tIdx);
         strcat(globalFor, buf);
     }
     $$->tIdx = temp_var++;
@@ -412,7 +412,7 @@ expression_statement : expression_statement OR_OP expression_statement {
         printf("\tt%d := %f\n", temp_var, $<fval>$);
     } else {
         char* buf = calloc(30, sizeof(char));
-        sprintf(buf, "	t%d := %f\n", temp_var, $<fval>$);
+        sprintf(buf, "\tt%d := %f\n", temp_var, $<fval>$);
         strcat(globalFor, buf);
     }
     astNode* fconst = createNodeByLabel(".x F_CONST");
@@ -458,7 +458,7 @@ expression_statement : expression_statement OR_OP expression_statement {
       printf("\tt%d := %s\n", temp_var, $1);
   } else {
       char* buf = calloc(30, sizeof(char));
-      sprintf(buf, "	t%d := %s\n", temp_var, $1);
+      sprintf(buf, "\tt%d := %s\n", temp_var, $1);
       strcat(globalFor, buf);
   }
   $$ = passNode(".expression_stmt", 1, identifier);
