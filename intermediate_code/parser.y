@@ -34,7 +34,7 @@ char globalFor[200];
 
 %token BREAK CASE CHAR CONTINUE DEFAULT ELSE FLOAT FOR IF RETURN
 %token INT SWITCH VOID WHILE MAIN_FUNCTION
-%token <strval> IDENTIFIER STRING_LITERAL
+%token <strval> IDENTIFIER STRING_LITERAL CHAR_CONST
 %token <ival> I_CONSTANT
 %token <fval> F_CONSTANT
 %token <node> AND_OP OR_OP LE_OP GE_OP EQ_OP NE_OP EQUAL_SIGN
@@ -79,6 +79,7 @@ P : main_func { $$ = $1; }
 
 functional_declaration : func_type func_declarator compound_statement {
     $$ = passNode("func_declaration", 3, $1, $2, $3);
+    printf("ENDFUNCTION\n");
 }
 ;
 
@@ -107,6 +108,7 @@ func_type : var_type {
 ;
 
 func_declarator : IDENTIFIER LEFT_ROUND RIGHT_ROUND  {
+    printf("FUNCTION %s\n", $1);
     astNode* identifier = createNodeByLabel("id");
     astNode* actual_id = createNodeByLabel($1);
     addNode(identifier, actual_id);
@@ -115,6 +117,7 @@ func_declarator : IDENTIFIER LEFT_ROUND RIGHT_ROUND  {
     $$ = passNode("func_declarator", 3, identifier, left, right);
 }
 | IDENTIFIER LEFT_ROUND param_list RIGHT_ROUND {
+    printf("FUNCTION %s\n", $1);
     astNode* identifier = createNodeByLabel("id");
     astNode* actual_id = createNodeByLabel($1);
     addNode(identifier, actual_id);
@@ -124,7 +127,9 @@ func_declarator : IDENTIFIER LEFT_ROUND RIGHT_ROUND  {
 }
 ;
 
-param_list : declare_var { $$ = passNode("param_list", 1, $1); }
+param_list : declare_var {
+    $$ = passNode("param_list", 1, $1);
+}
 | declare_var COMMA param_list {
     astNode* c = createNodeByLabel(", ");
     $$ = passNode("param_list", 3, $1, c, $3);
@@ -140,25 +145,28 @@ declare_var : var_type IDENTIFIER {
 ;
 
 /* Main Function Starts below */
-main_func : MAIN_FUNCTION LEFT_ROUND RIGHT_ROUND compound_statement {
+main_func : MAIN_FUNCTION { printf("FUNCTION main\n"); } LEFT_ROUND RIGHT_ROUND compound_statement {
     astNode* main = createNodeByLabel("main");
     astNode* left = createNodeByLabel("(");
     astNode* right = createNodeByLabel(")");
-    $$ = passNode("main_func", 4, main, left, right, $4);
+    $$ = passNode("main_func", 4, main, left, right, $5);
+    printf("ENDFUNCTION\n");
 }
-| INT MAIN_FUNCTION LEFT_ROUND RIGHT_ROUND compound_statement {
+| INT MAIN_FUNCTION { printf("FUNCTION main\n"); } LEFT_ROUND RIGHT_ROUND compound_statement {
     astNode* type = createNodeByLabel("int");
     astNode* main = createNodeByLabel("main");
     astNode* left = createNodeByLabel("(");
     astNode* right = createNodeByLabel(")");
-    $$ = passNode("main_func", 5, type,  main, left, right, $5);
+    $$ = passNode("main_func", 5, type,  main, left, right, $6);
+    printf("ENDFUNCTION\n");
 }
-| VOID MAIN_FUNCTION LEFT_ROUND RIGHT_ROUND compound_statement {
+| VOID MAIN_FUNCTION { printf("FUNCTION main\n"); } LEFT_ROUND RIGHT_ROUND compound_statement {
     astNode* type = createNodeByLabel("void");
     astNode* main = createNodeByLabel("main");
     astNode* left = createNodeByLabel("(");
     astNode* right = createNodeByLabel(")");
-    $$ = passNode("main_func", 5, type, main, left, right, $5);
+    $$ = passNode("main_func", 5, type, main, left, right, $6);
+    printf("ENDFUNCTION\n");
 }
 ;
 
@@ -426,6 +434,20 @@ expression_statement : expression_statement OR_OP expression_statement {
     addNode(string_literal, sval);
     $$ = passNode("expression_stmt", 1, string_literal);
     $$->tIdx = temp_var++;
+}
+| CHAR_CONST {
+    if (!is_for) {
+        printf("\tt%d := %s\n", temp_var, $<strval>$);
+    } else {
+        char* buf = calloc(5, sizeof(char));
+        sprintf(buf, "\tt%d := %s\n", temp_var, $<strval>$);
+        strcat(globalFor, buf);
+    }
+    astNode* char_literal = createNodeByLabel("CHAR_CONST");
+    astNode* cval = createNodeByLabel($1);
+    addNode(char_literal, cval);
+    cval->type = TY_CHAR;
+    $$ = passNode("expression_stmt", 1 , char_literal);    
 }
 | arr_element { $$ = passNode("expression_stmt", 1, $1); }
 | IDENTIFIER {
