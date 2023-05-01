@@ -829,6 +829,9 @@ Type expressionTypeCheck(astNode* root, table* scope){
             return TY_INT;
         } else if(strcmp(root -> child[0] -> label, ".assign_stmt") == 0){
             Type rightType = expressionTypeCheck(root -> child[0] -> child[2], scope);
+            if(rightType == TY_ACO || rightType == TY_ACT || rightType == TY_AIO || rightType == TY_AIT
+                || rightType == TY_AFO || rightType == TY_AFT)
+                err("Error : Arrays cannot be used in assignment expressions\n");
             /* printf("right = %d %s\n", rightType, root -> child[0] -> child[2] -> label); */
             if (strcmp(root -> child[0] -> child[0] -> label, ".id") == 0){
                 Type leftType = typevar(scope, root -> child[0] -> child[0] -> child[0] -> label);
