@@ -10,11 +10,11 @@ void yyerror(char const *s) {
     fprintf(stderr, "%s\n", s);
 }
 
-int ic_idx = 0;
-int temp_var = 1;
-int is_for = 0;
-int is_while = 0;
-int is_for_1 = 0;
+uint ic_idx = 0;
+uint temp_var = 1;
+uint is_for = 0;
+uint is_while = 0;
+uint is_for_1 = 0;
 uint print_num = 0;
 
 Stack *ifstack, *whilestack, *forstack;
