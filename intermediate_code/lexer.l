@@ -44,7 +44,7 @@ WHITESPACE      [ \t\v\n\f]
 "printf"                                          { return PRINTF_TOKEN; }
 
 {LETTER}{ALNUM}* {
-    strcpy(yylval.label, yytext);
+    strcpy(yylval.strval, yytext);
     return IDENTIFIER;
 }
 
@@ -53,29 +53,29 @@ WHITESPACE      [ \t\v\n\f]
     return I_CONSTANT;
 }
 "'"[^\']"'" {
-    strcpy(yylval.label, yytext);
+    strcpy(yylval.strval, yytext);
     return CHAR_CONST;
 }
 
 {DIGIT}+{EXPONENT}{FLOAT_SUFFIX}? {
-    yylval.fval = atof(yytext);
+    yylval.fval = (float)atof(yytext);
     return F_CONSTANT;
 }
 {DIGIT}*"."{DIGIT}+{EXPONENT}?{FLOAT_SUFFIX}? {
-    yylval.fval = atof(yytext);
+    yylval.fval = (float)atof(yytext);
     return F_CONSTANT;
 }
 {DIGIT}+"."{EXPONENT}?{FLOAT_SUFFIX}? {
-    yylval.fval = atof(yytext);
+    yylval.fval = (float)atof(yytext);
     return F_CONSTANT;
 }
 
 (\"([^"\\\n]|{ESCAPE_SEQUENCE})*\"{WHITESPACE}*)+ {
-    strcpy(yylval.label, yytext);
+    strcpy(yylval.strval, yytext);
     return STRING_LITERAL;
 }
 "'"{ESCAPE_SEQUENCE}"'" {
-    strcpy(yylval.label, yytext);
+    strcpy(yylval.strval, yytext);
     return CHAR_CONST;
 }
 
