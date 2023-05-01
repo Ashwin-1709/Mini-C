@@ -1,6 +1,6 @@
 CXX = g++
 CC = gcc
-CFLAGS = -g #-Wall
+CFLAGS = -g -Wall
 
 all: lex.yy.c y.tab.c intermediate.out
 
