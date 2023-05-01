@@ -107,66 +107,69 @@ int *get_args(astNode *root) {
 }
 
 bool canCombine(Type t) {
-    if(t == TY_INT || t == TY_FLOAT)
+    if (t == TY_INT || t == TY_FLOAT)
         return true;
     return false;
 }
 
 Type combine(Type t1, Type t2) {
-    if(!canCombine(t1) || !canCombine(t2))
+    if (!canCombine(t1) || !canCombine(t2))
         return TY_UNDEFINED;
-    if(t1 == TY_FLOAT || t2 == TY_FLOAT)
+    if (t1 == TY_FLOAT || t2 == TY_FLOAT)
         return TY_FLOAT;
     return TY_INT;
 }
 
-void printAST(astNode* root){
-    if (root -> childCnt == 0){
-        if (strcmp(root -> label, "{") != 0 && strcmp(root -> label, "}") != 0
-        && strcmp(root -> label, "(") != 0 && strcmp(root -> label, ")") != 0
-        && strcmp(root -> label, "[") != 0 && strcmp(root -> label, "]") != 0 
-        && strcmp(root -> label, ";") != 0 && strcmp(root -> label, ",") != 0)
+void printAST(astNode *root) {
+    if (root->childCnt == 0) {
+        if (strcmp(root->label, "{") != 0 && strcmp(root->label, "}") != 0 &&
+            strcmp(root->label, "(") != 0 && strcmp(root->label, ")") != 0 &&
+            strcmp(root->label, "[") != 0 && strcmp(root->label, "]") != 0 &&
+            strcmp(root->label, ";") != 0 && strcmp(root->label, ",") != 0)
             printf("[%s]", root->label);
         return;
     }
-    if (strcmp(root -> label, ".expression_stmt") == 0){
-        if (root -> childCnt == 3){
-            if (strcmp(root -> child[0] -> label, ".expression_stmt") == 0){
-                printf("[%s", root -> child[1] -> label);
-                printAST(root -> child[0]);
-                printAST(root -> child[2]);
+    if (strcmp(root->label, ".expression_stmt") == 0) {
+        if (root->childCnt == 3) {
+            if (strcmp(root->child[0]->label, ".expression_stmt") == 0) {
+                printf("[%s", root->child[1]->label);
+                printAST(root->child[0]);
+                printAST(root->child[2]);
                 printf("]");
                 return;
-            }
-            else{
-                printAST(root -> child[1]);
+            } else {
+                printAST(root->child[1]);
                 return;
             }
         }
-        printAST(root -> child[0]);
+        printAST(root->child[0]);
         return;
     }
-    if (root -> childCnt > 1){
+    if (root->childCnt > 1) {
         int useless = 0;
-        for(int i = 0; i < root -> childCnt; i++){
-            if (strcmp(root -> child[i] -> label, "{") == 0 || strcmp(root -> child[i] -> label, "}") == 0
-        || strcmp(root -> child[i] -> label, "(") == 0 || strcmp(root -> child[i] -> label, ")") == 0
-        || strcmp(root -> child[i] -> label, "[") == 0 || strcmp(root -> child[i] -> label, "]") == 0 || strcmp(root -> child[i] -> label, ";") == 0){
+        for (int i = 0; i < root->childCnt; i++) {
+            if (strcmp(root->child[i]->label, "{") == 0 ||
+                strcmp(root->child[i]->label, "}") == 0 ||
+                strcmp(root->child[i]->label, "(") == 0 ||
+                strcmp(root->child[i]->label, ")") == 0 ||
+                strcmp(root->child[i]->label, "[") == 0 ||
+                strcmp(root->child[i]->label, "]") == 0 ||
+                strcmp(root->child[i]->label, ";") == 0) {
                 useless++;
             }
         }
         int flag = 0;
-        if (root -> childCnt - useless > 1){
-            printf("[%s", root -> label);
+        if (root->childCnt - useless > 1) {
+            printf("[%s", root->label);
             flag = 1;
         }
-        for(int i = 0; i < root -> childCnt; i++){
-            printAST(root -> child[i]);
+        for (int i = 0; i < root->childCnt; i++) {
+            printAST(root->child[i]);
         }
-        if (flag) 
+        if (flag)
             printf("]");
         return;
     }
-    printAST(root -> child[0]);
+    printAST(root->child[0]);
     return;
 }

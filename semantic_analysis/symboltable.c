@@ -1,11 +1,11 @@
 #include "ast.h"
+#include <assert.h>
 #include <stdarg.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <strings.h>
-#include <assert.h>
 
 /*
     type -> 0 - int
@@ -118,7 +118,7 @@ Type typevar(table *cur, char *id) {
     return TY_UNDEFINED;
 }
 
-entry* getEntry(table* cur, char *id) {
+entry *getEntry(table *cur, char *id) {
     while (cur != NULL) {
         for (int i = 0; i < cur->entryCnt; i++) {
             if (strcmp(id, cur->entries[i]->id) == 0)
@@ -136,13 +136,14 @@ table *changeScope(table *cur) {
     return child;
 }
 
-void insertfunc(char *id, Type type, table *curtable, int *args, bool hasargs, astNode* fnode) {
+void insertfunc(char *id, Type type, table *curtable, int *args, bool hasargs,
+                astNode *fnode) {
     entry *cur = (entry *)(malloc(sizeof(entry)));
     cur->id = strdup(id);
     cur->type = type;
     cur->isfunc = true;
     int count = 0;
-    if(hasargs) {
+    if (hasargs) {
         for (int j = 0; j < 50; j++) {
             if (args[j] == 100) {
                 count = j;
@@ -151,21 +152,21 @@ void insertfunc(char *id, Type type, table *curtable, int *args, bool hasargs, a
         }
         // printf("argcount = %d\n", count);
         cur->x_lim = count;
-    }
-    else cur->x_lim = -1;
+    } else
+        cur->x_lim = -1;
     cur->y_lim = -1;
     cur->parameters = (int *)malloc(sizeof(int) * 50);
-    for(int i = 0 ; i < 50 ; i++)
+    for (int i = 0; i < 50; i++)
         cur->parameters[i] = 100;
-    if(hasargs) 
+    if (hasargs)
         cur->parameters = args;
     cur->node = fnode;
     insert(cur, curtable);
 }
 
-table* nextScope(table* cur) {
-    for(int i = 0 ; i < cur->childCnt ; i++)
-        if(!cur->visited[i]) {
+table *nextScope(table *cur) {
+    for (int i = 0; i < cur->childCnt; i++)
+        if (!cur->visited[i]) {
             cur->visited[i] = true;
             return cur->childTables[i];
         }
