@@ -60,7 +60,7 @@ WHITESPACE      [ \t\v\n\f]
 
 
 {LETTER}{ALNUM}*					                                    {printf("%d\t%s\t%s\n",line,yytext,"IDENTIFIER");if(isPf){pfCount--;}}
- 
+({LETTER}{ALNUM}*	)"["("0"|{NONZERO}({DIGIT}*))"]"       {printf("%d\t%s\t%s\n",line,yytext,"IDENTIFIER");if(isPf){pfCount--;}}
 ("0"|{NONZERO}({DIGIT}*))				                                {printf("%d\t%s\t%s\n",line,yytext,"I_CONSTANT"); if(isPf){pfCount--;}}
 "'"[^\']"'"                                                             {printf("%d\t%s\t%s\n",line,yytext,"CHAR_CONST");if(isPf){pfCount--;}}
  
