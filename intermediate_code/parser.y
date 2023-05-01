@@ -448,6 +448,7 @@ expression_statement : expression_statement OR_OP expression_statement {
     addNode(char_literal, cval);
     cval->type = TY_CHAR;
     $$ = passNode(".expression_stmt", 1 , char_literal);    
+    $$->tIdx = temp_var++;
 }
 | arr_element { $$ = passNode(".expression_stmt", 1, $1); }
 | IDENTIFIER {
