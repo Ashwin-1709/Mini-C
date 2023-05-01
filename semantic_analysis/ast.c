@@ -74,7 +74,7 @@ astNode *passNode(char *label, int count, ...) {
 }
 
 char *find_id(astNode *root) {
-    if (strcmp(root->label, "id") == 0)
+    if (strcmp(root->label, ".id") == 0)
         return root->child[0]->label;
     char *id = "N/A";
     for (int i = 0; i < root->childCnt; i++) {
@@ -88,7 +88,7 @@ char *find_id(astNode *root) {
 void arg_dfs(astNode *root, int *cur, int *args) {
     if (root == NULL)
         return;
-    if (strcmp(root->label, "declare_var") == 0) {
+    if (strcmp(root->label, ".declare_var") == 0) {
         Type type = root->child[0]->type;
         args[*cur] = type;
         *cur = *cur + 1;
