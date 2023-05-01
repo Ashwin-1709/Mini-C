@@ -214,7 +214,7 @@ print_obj : IDENTIFIER | I_CONSTANT | F_CONSTANT | STRING_LITERAL | CHAR_CONST |
 
 int main() {
     yyparse();
-    printf("Syntax analysis done\n");
+    printf("Program is syntactically correct\n");
 }
 
 int yyerror() {

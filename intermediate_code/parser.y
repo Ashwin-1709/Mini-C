@@ -794,7 +794,7 @@ print_obj : IDENTIFIER {
     astNode* identifier = createNodeByLabel(".id");
     astNode* actual_id = createNodeByLabel($1);
     addNode(identifier, actual_id);
-    $$ = passNode("print_obj", 1 , identifier);
+    $$ = passNode(".print_obj", 1 , identifier);
 }
 | I_CONSTANT {
     print_num++;
@@ -802,7 +802,7 @@ print_obj : IDENTIFIER {
     astNode* iconst = createNodeByLabel(".I_CONST");
     astNode* val = createNodeByIntVal($1);
     addNode(iconst, val);
-    $$ = passNode("print_obj", 1 , iconst);
+    $$ = passNode(".print_obj", 1 , iconst);
 }
 | F_CONSTANT {
     print_num++;
@@ -810,7 +810,7 @@ print_obj : IDENTIFIER {
     astNode* fconst = createNodeByLabel(".F_CONST");
     astNode* val = createNodeByVal($1);
     addNode(fconst, val);
-    $$ = passNode("print_obj", 1 , fconst);
+    $$ = passNode(".print_obj", 1 , fconst);
 }
 | CHAR_CONST {
     print_num++;
@@ -818,7 +818,7 @@ print_obj : IDENTIFIER {
     astNode* char_const = createNodeByLabel(".CHAR_CONST");
     astNode* val = createNodeByLabel($1);
     addNode(char_const, val);
-    $$ = passNode("print_obj", 1 , char_const);
+    $$ = passNode(".print_obj", 1 , char_const);
 }
 ;
 %%

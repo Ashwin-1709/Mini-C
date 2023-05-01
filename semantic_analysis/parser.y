@@ -61,7 +61,7 @@
 %type <node> compound_statement statement_list single_statement switch_statment for_statement if_statement while_statement declaration jump_statement print_statement expr return_statement 
 %type <node> expression_statement unary_expr functional_call arr_element assignment_statement
 %type <node> arg_list arg case_list_def case_list default_stmt case
-%type <node> else_clause for_loop_assignment for_loop_declaration 
+%type <node> else_clause for_loop_assignment for_loop_declaration print_obj
 %type <node> init_declarator init_declarator_list declarator_arr declarator_var print_params
 
 
@@ -404,7 +404,7 @@ for_statement : FOR LEFT_ROUND for_loop_declaration expr for_loop_assignment RIG
                         astNode* for_st = createNodeByLabel("for");
                         astNode* left_round = createNodeByLabel("(");
                         astNode* right_round = createNodeByLabel(")");
-                        $$ = passNode("for_stmt", 7, for_st, left_round, $3, $4, $5, right_round, $7);
+                        $$ = passNode(".for_stmt", 7, for_st, left_round, $3, $4, $5, right_round, $7);
                     }
 ;
 
@@ -492,24 +492,48 @@ print_statement : PRINTF_TOKEN LEFT_ROUND STRING_LITERAL RIGHT_ROUND SEMICOLON{
                         $$ = passNode(".print_stmt", 7, printf_tk, left_round, string_lit, comma, $5, right_round, semicolon);
                  }
 ;
-print_params : IDENTIFIER {
-                astNode* identifier = createNodeByLabel(".id");
-                astNode* actual_id = createNodeByLabel($1);
-                addNode(identifier, actual_id);
-                $$ = passNode(".print_params", 1, identifier);
+print_params : print_obj {
+                $$ = passNode(".print_params", 1, $1);
             } 
-            | IDENTIFIER COMMA print_params {
-                astNode* identifier = createNodeByLabel(".id");
-                astNode* actual_id = createNodeByLabel($1);
-                addNode(identifier, actual_id);
+            | print_obj COMMA print_params {
                 astNode* comma = createNodeByLabel(",");
-                $$ = passNode(".print_params", 3, identifier, comma, $3);
+                $$ = passNode(".print_params", 3, $1, comma, $3);
             }
+;
+
+print_obj : IDENTIFIER {
+                        astNode* identifier = createNodeByLabel(".id");
+                        astNode* actual_id = createNodeByLabel($1);
+                        addNode(identifier, actual_id);
+                        $$ = passNode("print_obj", 1 , identifier);
+            }
+           | I_CONSTANT {
+                        astNode* iconst = createNodeByLabel(".I_CONST");
+                        astNode* val = createNodeByIntVal($1);
+                        addNode(iconst, val);
+                        $$ = passNode("print_obj", 1 , iconst);
+           }
+           | F_CONSTANT {
+                        astNode* fconst = createNodeByLabel(".F_CONST");
+                        astNode* val = createNodeByVal($1);
+                        addNode(fconst, val);
+                        $$ = passNode("print_obj", 1 , fconst);
+           }
+           | CHAR_CONST {
+                        astNode* char_const = createNodeByLabel(".CHAR_CONST");
+                        astNode* val = createNodeByLabel($1);
+                        addNode(char_const, val);
+                        $$ = passNode("print_obj", 1 , char_const);
+           }
+           | arr_element {$$ = passNode(".print_obj" , 1 , $1);} 
+
 ;
 %%
 void init_table(astNode* root, table* cur_scope);
 void process_expression(astNode* root , table* cur);
 Type expressionTypeCheck(astNode* root, table* scope);
+void process_parameter_list(astNode* root, table* cur);
+void process_function(astNode* root, table* cur);
 
 void process_parameter_list(astNode* root, table* cur) {
     if(strcmp(root->label, ".declare_var") == 0) {
@@ -626,6 +650,13 @@ void process_declaration(astNode* root, table* cur) {
 
 void init_table(astNode* root, table* cur_scope) {
     /* printf("label = %s\n", root->label); */
+
+    if(strcmp(root -> label, ".func_declaration") == 0)
+        funcTypeGlobal = root->child[0]->type;
+    
+    if(strcmp(root -> label, ".main_func") == 0)
+        funcTypeGlobal = TY_INT;
+
     if(strcmp(root->label, ".func_declaration") == 0) {
         /* printf("func_dec\n"); */
         table* child = changeScope(cur_scope);
@@ -643,6 +674,7 @@ void init_table(astNode* root, table* cur_scope) {
     if(strcmp(root->label, ".declaration") == 0) {
         /* printf("dec\n"); */
         process_declaration(root,  cur_scope);
+        declarationTypeCheck(root, cur_scope);
         return;
     }
 
@@ -653,21 +685,28 @@ void init_table(astNode* root, table* cur_scope) {
         if(!isDeclared(var_id, cur_scope))
             undecerr(var_id);
         process_expression(root->child[2], cur_scope);
+        expressionTypeCheck(root->child[2], cur_scope);
         return;
     }
 
     if(strcmp(root->label, ".expression_stmt") == 0) {
         /* printf("expr\n"); */
         process_expression(root, cur_scope);
+        expressionTypeCheck(root, cur_scope);
         return;
     }
 
-    if(strcmp(root->label, "for_stmt") == 0) {
+    if(strcmp(root->label, ".for_stmt") == 0) {
         /* printf("for_stmt\n"); */
         /* printTable(cur_scope); */
         table* child = changeScope(cur_scope);
         for(int i = 0 ; i < root->childCnt ; i++)
             init_table(root->child[i], child);
+        return;
+    }
+
+    if(strcmp(root -> label, ".return_stmt") == 0) {
+        returnTypeCheck(root, cur_scope);
         return;
     }
 
@@ -778,10 +817,15 @@ void argListTypeCheck(astNode* root, table* scope) {
             break;
         argc++;
     }  
-     if(argc == 0 && funcEntry->parameters != NULL)
+    int expectedArgc = 0;
+    for(int i = 0 ; i < 50 ; i++) {
+        if(funcEntry->parameters[i] == 100)
+            break;
+        expectedArgc++;
+    }
+
+    if(expectedArgc != argc)
         err("Error : incompatible functional parameters\n");
-     if(argc > 0 && funcEntry->parameters == NULL)
-        err("Error : incompatible functional parameters\n"); 
      for(int i = 0 ; i < 50 ; i++) {
         if(arg[i] != funcEntry->parameters[i] || (arg[i] == 100 && funcEntry->parameters[i] != 100)) { 
             if((arg[i] == TY_INT || arg[i] == TY_FLOAT) && (funcEntry->parameters[i] == TY_INT || funcEntry->parameters[i] == TY_FLOAT))
@@ -814,10 +858,13 @@ Type expressionTypeCheck(astNode* root, table* scope){
             return TY_INT;
         } else if(strcmp(root -> child[0] -> label, ".assign_stmt") == 0){
             Type rightType = expressionTypeCheck(root -> child[0] -> child[2], scope);
-            /* printf("right = %d %s\n", rightType, root -> child[0] -> child[2] -> label); */
+            if(rightType == TY_ACO || rightType == TY_ACT || rightType == TY_AIO || rightType == TY_AIT
+                || rightType == TY_AFO || rightType == TY_AFT)
+                err("Error : Arrays cannot be used in assignment expressions\n");
+            /* printf("right = %d %s\n", rightType, root -> child[0] -> child[0] -> label); */
             if (strcmp(root -> child[0] -> child[0] -> label, ".id") == 0){
                 Type leftType = typevar(scope, root -> child[0] -> child[0] -> child[0] -> label);
-                /* printf("left = %d\n", leftType); */
+                // printf("left = %d\n", leftType);
                 if((leftType == TY_INT || leftType == TY_FLOAT) && (rightType == TY_INT || rightType == TY_FLOAT))
                     return leftType;
                 if (leftType != rightType)
@@ -828,12 +875,12 @@ Type expressionTypeCheck(astNode* root, table* scope){
             CheckArray(root -> child[0] ->child[0], scope);
             Type leftType = typevar(scope, root -> child[0] -> child[0] -> child [0] -> child[0] -> label);
             if (leftType == TY_AIO || leftType == TY_AIT){
-                if (rightType != TY_INT)
+                if (rightType != TY_INT && rightType != TY_FLOAT)
                     err("Error : Incompatible type left side and right side of assignment, Expected int or float\n");
                 return TY_INT;
             }
             if (leftType == TY_AFO || leftType == TY_AFT){
-                if (rightType != TY_FLOAT)
+                if (rightType != TY_INT && rightType != TY_FLOAT)
                     err("Error : Incompatible type left side and right side of assignment, Expected int or float\n");
                 return TY_FLOAT;
             }
@@ -982,6 +1029,7 @@ int main() {
     globalfuncs = createTable();
     yyparse();
     astNode* root = pop();
+    printAST(root);
     /* printf("\n\n---------Initiating Semantic Analysis---------\n\n"); */
     init_table(root, cur_table);
     /* printf("\n\n---------Semantic Analysis done---------\n---------Program is semantically correct---------\n\n");
@@ -991,13 +1039,14 @@ int main() {
     printTable(globalfuncs); */
     /* printf("\n\n----Initiating type check-----\n\n"); */
     /* printTable(cur_table); */
-    TypeCheck(root, cur_table);
-    /* resetTables(cur_table); */
-    /* printTree(root); */
-    /* printf("\n\n----Type check done-----\n\n"); */
+    /* TypeCheck(root, cur_table); */
+    resetTables(cur_table);
+    // printTree(root);
+    /* simulateProgram(root, cur_table); */
+    /* printf("\n\n----simulation done-----\n\n"); */
 }
 
 int yyerror() {
     printf("Syntax error\n");
-    exit(0);
+    exit(1);
 }
