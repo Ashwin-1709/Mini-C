@@ -73,6 +73,35 @@ entry *createVarEntry(char *id, Type type, void *value, int x_lim, int y_lim) {
     cur->y_lim = y_lim;
     cur->isfunc = false;
     cur->node = NULL;
+    if(x_lim > 0 && y_lim == -1) {
+        if(type == 1) {
+            int *arr = (int *)malloc(sizeof(int) * x_lim);
+            cur->value = (void *)&arr;
+        } else if(type == 2) {
+            float *arr = (float *)malloc(sizeof(float) * x_lim);
+            cur->value = (void *)&arr;
+        } else {
+            char *arr = (char *)malloc(sizeof(char) * x_lim);
+            cur->value = (void *)&arr;
+        }
+    } else if(x_lim > 0 && y_lim > 0) {
+        if(type == 1) {
+            int **arr = (int **)malloc(sizeof(int*) * x_lim);
+            for(int i = 0 ; i < x_lim ; i++)
+                arr[i] = (int *)malloc(sizeof(int) * y_lim);
+            cur->value = (void *)&arr;
+        } else if(type == 2) {
+            float **arr = (float **)malloc(sizeof(float*) * x_lim);
+            for(int i = 0 ; i < x_lim ; i++)
+                arr[i] = (float *)malloc(sizeof(float) * y_lim);
+            cur->value = (void *)&arr;
+        } else {
+            char **arr = (char **)malloc(sizeof(char*) * x_lim);
+            for(int i = 0 ; i < x_lim ; i++)
+                arr[i] = (char *)malloc(sizeof(char) * y_lim);
+            cur->value = (void *)&arr;
+        }
+    }
     return cur;
 }
 
@@ -168,4 +197,12 @@ table* nextScope(table* cur) {
         }
     assert("Cannot change scope");
     return NULL;
+}
+
+void resetTables(table* scope) {
+    assert(scope != NULL);
+    for(int i = 0 ; i < 30 ; i++)
+        scope->visited[i] = false;
+    for(int i = 0 ; i < scope -> childCnt ; i++)
+        resetTables(scope -> childTables[i]);
 }

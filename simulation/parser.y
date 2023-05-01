@@ -75,15 +75,15 @@
 %right EXCLAMATION UNARY_MINUS
 %%
 /* Functional declarations */
-s : P  {$$ = createNodeByLabel("S"); addNode($$, $1); push($$);}
+s : P  {$$ = createNodeByLabel(".S"); addNode($$, $1); push($$);}
 ;
 
 P : main_func {$$ = $1;}  
-   | functional_declaration P {$$ = passNode("P", 2 , $1 , $2);}
+   | functional_declaration P {$$ = passNode(".P", 2 , $1 , $2);}
 ;
 
 functional_declaration : func_type func_declarator compound_statement { 
-                    $$ = passNode("func_declaration", 3 , $1 , $2 , $3); 
+                    $$ = passNode(".func_declaration", 3 , $1 , $2 , $3); 
                 }
 ;
 
@@ -92,40 +92,40 @@ var_type : INT {$$ = passNode("int" , 0); $$->type = TY_INT;}
           | FLOAT {$$ = passNode("float" , 0); $$->type = TY_FLOAT;}
 ;
 
-func_type : var_type {$$ = passNode("var_type" , 1 , $1); $$->type = $1->type;} 
+func_type : var_type {$$ = passNode(".var_type" , 1 , $1); $$->type = $1->type;} 
             | VOID {$$ = passNode("void" , 0); $$->type = TY_VOID;}
 ;
 
 func_declarator : IDENTIFIER LEFT_ROUND RIGHT_ROUND  {
-                    astNode* identifier = createNodeByLabel("id");
+                    astNode* identifier = createNodeByLabel(".id");
                     astNode* actual_id = createNodeByLabel($1);
                     addNode(identifier, actual_id);
                     astNode* left = createNodeByLabel("(");
                     astNode* right = createNodeByLabel(")");
-                    $$ = passNode("func_declarator", 3 , identifier, left , right);
+                    $$ = passNode(".func_declarator", 3 , identifier, left , right);
                 }
                 | IDENTIFIER LEFT_ROUND param_list RIGHT_ROUND {
-                    astNode* identifier = createNodeByLabel("id");
+                    astNode* identifier = createNodeByLabel(".id");
                     astNode* actual_id = createNodeByLabel($1);
                     addNode(identifier, actual_id);
                     astNode* left = createNodeByLabel("(");
                     astNode* right = createNodeByLabel(")");
-                    $$ = passNode("func_declarator", 4 , identifier, left , $3 ,right);
+                    $$ = passNode(".func_declarator", 4 , identifier, left , $3 ,right);
                 }
 ;
 
-param_list : declare_var {$$ = passNode("param_list", 1 , $1);} 
+param_list : declare_var {$$ = passNode(".param_list", 1 , $1);} 
             | declare_var COMMA param_list {
                 astNode* c = createNodeByLabel(",");
-                $$ = passNode("param_list", 3 , $1 , c , $3);
+                $$ = passNode(".param_list", 3 , $1 , c , $3);
             }
 ;
 
 declare_var : var_type IDENTIFIER {
-        astNode* identifier = createNodeByLabel("id");
+        astNode* identifier = createNodeByLabel(".id");
         astNode* actual_id = createNodeByLabel($2);
         addNode(identifier, actual_id);
-        $$ = passNode("declare_var", 2 , $1 , identifier);
+        $$ = passNode(".declare_var", 2 , $1 , identifier);
 }
 ;
 
@@ -134,173 +134,173 @@ main_func : MAIN_FUNCTION LEFT_ROUND RIGHT_ROUND compound_statement {
                 astNode* main = createNodeByLabel("main");
                 astNode* left = createNodeByLabel("(");
                 astNode* right = createNodeByLabel(")");
-                $$ = passNode("main_func", 4 , main, left, right , $4);
+                $$ = passNode(".main_func", 4 , main, left, right , $4);
             }
             | INT MAIN_FUNCTION LEFT_ROUND RIGHT_ROUND compound_statement {
                 astNode* type = createNodeByLabel("int");
                 astNode* main = createNodeByLabel("main");
                 astNode* left = createNodeByLabel("(");
                 astNode* right = createNodeByLabel(")");
-                $$ = passNode("main_func", 5 ,type ,  main, left, right , $5);
+                $$ = passNode(".main_func", 5 ,type ,  main, left, right , $5);
             }
             | VOID MAIN_FUNCTION LEFT_ROUND RIGHT_ROUND compound_statement {
                 astNode* type = createNodeByLabel("void");
                 astNode* main = createNodeByLabel("main");
                 astNode* left = createNodeByLabel("(");
                 astNode* right = createNodeByLabel(")");
-                $$ = passNode("main_func", 5 , type , main, left, right , $5);
+                $$ = passNode(".main_func", 5 , type , main, left, right , $5);
             }
 ;
 
 compound_statement : LEFT_CURLY RIGHT_CURLY {
                         astNode* left = createNodeByLabel("{");
                         astNode* right = createNodeByLabel("}");
-                        $$ = passNode("compound_stmt", 2 , left , right);
+                        $$ = passNode(".compound_stmt", 2 , left , right);
                     }
             | LEFT_CURLY statement_list RIGHT_CURLY {
                         astNode* left = createNodeByLabel("{");
                         astNode* right = createNodeByLabel("}");
-                        $$ = passNode("compound_stmt", 3 , left , $2 , right);
+                        $$ = passNode(".compound_stmt", 3 , left , $2 , right);
             }
 ;
 
-statement_list : single_statement {$$ = passNode("stmt_list" , 1 , $1);}
-            | single_statement statement_list {$$ = passNode("stmt_list" , 2 , $1 , $2);}
+statement_list : single_statement {$$ = passNode(".stmt_list" , 1 , $1);}
+            | single_statement statement_list {$$ = passNode(".stmt_list" , 2 , $1 , $2);}
 ;
-single_statement : switch_statment {$$ = passNode("single_stmt" , 1 , $1);}
-                | expr {$$ = passNode("single_stmt" , 1 , $1);}
-                | if_statement {$$ = passNode("single_stmt" , 1 , $1);}
-                | print_statement {$$ = passNode("single_stmt" , 1 , $1);}
-                | for_statement {$$ = passNode("single_stmt" , 1 , $1);}
-                | return_statement {$$ = passNode("single_stmt" , 1 , $1);}
-                | while_statement  {$$ = passNode("single_stmt" , 1 , $1);}
-                | jump_statement  {$$ = passNode("single_stmt" , 1 , $1);}
-                | declaration {$$ = passNode("single_stmt" , 1 , $1);}
-                | compound_statement {$$ = passNode("single_stmt" , 1 , $1);}
+single_statement : switch_statment {$$ = passNode(".single_stmt" , 1 , $1);}
+                | expr {$$ = passNode(".single_stmt" , 1 , $1);}
+                | if_statement {$$ = passNode(".single_stmt" , 1 , $1);}
+                | print_statement {$$ = passNode(".single_stmt" , 1 , $1);}
+                | for_statement {$$ = passNode(".single_stmt" , 1 , $1);}
+                | return_statement {$$ = passNode(".single_stmt" , 1 , $1);}
+                | while_statement  {$$ = passNode(".single_stmt" , 1 , $1);}
+                | jump_statement  {$$ = passNode(".single_stmt" , 1 , $1);}
+                | declaration {$$ = passNode(".single_stmt" , 1 , $1);}
+                | compound_statement {$$ = passNode(".single_stmt" , 1 , $1);}
 ;
 
 jump_statement : BREAK SEMICOLON {
                     astNode* breakNode = createNodeByLabel("break");
                     astNode* semicolon = createNodeByLabel(";");
-                    $$ = passNode("jump_stmt", 2 , breakNode, semicolon);
+                    $$ = passNode(".jump_stmt", 2 , breakNode, semicolon);
                 }
                 | CONTINUE SEMICOLON {
                     astNode* continueNode = createNodeByLabel("continue");
                     astNode* semicolon = createNodeByLabel(";");
-                    $$ = passNode("jump_stmt", 2 , continueNode, semicolon);
+                    $$ = passNode(".jump_stmt", 2 , continueNode, semicolon);
                 }
 ;
 
 return_statement : RETURN expr {
                         astNode* returnNode = createNodeByLabel("return");
-                        $$ = passNode("return_stmt", 2 , returnNode, $2);
+                        $$ = passNode(".return_stmt", 2 , returnNode, $2);
                     }
 ;
 /* Expression */
-expr : SEMICOLON {$$ = passNode("expr", 1 , createNodeByLabel(";"));}
-        | expression_statement SEMICOLON {$$ = passNode("expr", 2 , $1 , createNodeByLabel(";"));}
-        | expr COMMA expr SEMICOLON {$$ = passNode("expr", 4 , $1 , createNodeByLabel(",") , $3 , createNodeByLabel(";"));}
+expr : SEMICOLON {$$ = passNode(".expr", 1 , createNodeByLabel(";"));}
+        | expression_statement SEMICOLON {$$ = passNode(".expr", 2 , $1 , createNodeByLabel(";"));}
+        | expr COMMA expr SEMICOLON {$$ = passNode(".expr", 4 , $1 , createNodeByLabel(",") , $3 , createNodeByLabel(";"));}
       
 ;
-expression_statement : expression_statement OR_OP expression_statement  {$$ = passNode("expression_stmt" , 3 , $1 , createNodeByLabel("||") , $3);}
-				      | expression_statement AND_OP expression_statement {$$ = passNode("expression_stmt" , 3 , $1 , createNodeByLabel("&&") , $3);}
-				      | expression_statement GT_OP expression_statement  {$$ = passNode("expression_stmt" , 3 , $1 , createNodeByLabel(">") , $3);}
-			          | expression_statement LT_OP expression_statement {$$ = passNode("expression_stmt" , 3 , $1 , createNodeByLabel("<") , $3);}
-				      | expression_statement GE_OP expression_statement {$$ = passNode("expression_stmt" , 3 , $1 , createNodeByLabel(">=") , $3);}
-				      | expression_statement LE_OP expression_statement {$$ = passNode("expression_stmt" , 3 , $1 , createNodeByLabel("<=") , $3);}
-				      | expression_statement PLUS expression_statement {$$ = passNode("expression_stmt" , 3 , $1 , createNodeByLabel("+") , $3);}
-				      | expression_statement HYPHEN expression_statement {$$ = passNode("expression_stmt" , 3 , $1 , createNodeByLabel("-") , $3);}
-				      | expression_statement STAR expression_statement {$$ = passNode("expression_stmt" , 3 , $1 , createNodeByLabel("*") , $3);}
-				      | expression_statement SLASH expression_statement {$$ = passNode("expression_stmt" , 3 , $1 , createNodeByLabel("/") , $3);}
-				      | expression_statement PERCENT expression_statement {$$ = passNode("expression_stmt" , 3 , $1 , createNodeByLabel("%") , $3);}
-                      | expression_statement EQ_OP expression_statement {$$ = passNode("expression_stmt" , 3 , $1 , createNodeByLabel("==") , $3);}
-                      | expression_statement NE_OP expression_statement {$$ = passNode("expression_stmt" , 3 , $1 , createNodeByLabel("!=") , $3);}
-				      | unary_expr {$$ = passNode("expression_stmt" , 1 , $1);}
-                      | assignment_statement {$$ = passNode("expression_stmt" , 1 , $1);}
-				      | functional_call {$$ = passNode("expression_stmt" , 1 , $1);}
+expression_statement : expression_statement OR_OP expression_statement  {$$ = passNode(".expression_stmt" , 3 , $1 , createNodeByLabel("||") , $3);}
+				      | expression_statement AND_OP expression_statement {$$ = passNode(".expression_stmt" , 3 , $1 , createNodeByLabel("&&") , $3);}
+				      | expression_statement GT_OP expression_statement  {$$ = passNode(".expression_stmt" , 3 , $1 , createNodeByLabel(">") , $3);}
+			          | expression_statement LT_OP expression_statement {$$ = passNode(".expression_stmt" , 3 , $1 , createNodeByLabel("<") , $3);}
+				      | expression_statement GE_OP expression_statement {$$ = passNode(".expression_stmt" , 3 , $1 , createNodeByLabel(">=") , $3);}
+				      | expression_statement LE_OP expression_statement {$$ = passNode(".expression_stmt" , 3 , $1 , createNodeByLabel("<=") , $3);}
+				      | expression_statement PLUS expression_statement {$$ = passNode(".expression_stmt" , 3 , $1 , createNodeByLabel("+") , $3);}
+				      | expression_statement HYPHEN expression_statement {$$ = passNode(".expression_stmt" , 3 , $1 , createNodeByLabel("-") , $3);}
+				      | expression_statement STAR expression_statement {$$ = passNode(".expression_stmt" , 3 , $1 , createNodeByLabel("*") , $3);}
+				      | expression_statement SLASH expression_statement {$$ = passNode(".expression_stmt" , 3 , $1 , createNodeByLabel("/") , $3);}
+				      | expression_statement PERCENT expression_statement {$$ = passNode(".expression_stmt" , 3 , $1 , createNodeByLabel("%") , $3);}
+                      | expression_statement EQ_OP expression_statement {$$ = passNode(".expression_stmt" , 3 , $1 , createNodeByLabel("==") , $3);}
+                      | expression_statement NE_OP expression_statement {$$ = passNode(".expression_stmt" , 3 , $1 , createNodeByLabel("!=") , $3);}
+				      | unary_expr {$$ = passNode(".expression_stmt" , 1 , $1);}
+                      | assignment_statement {$$ = passNode(".expression_stmt" , 1 , $1);}
+				      | functional_call {$$ = passNode(".expression_stmt" , 1 , $1);}
 				      | LEFT_ROUND expression_statement RIGHT_ROUND {
                             astNode* left = createNodeByLabel("(");
                             astNode* right = createNodeByLabel(")");
-                            $$ = passNode("expression_stmt", 3 , left , $2 , right);
+                            $$ = passNode(".expression_stmt", 3 , left , $2 , right);
                       }
 				      |  I_CONSTANT {
-                            astNode* iconst = createNodeByLabel("I_CONST");
+                            astNode* iconst = createNodeByLabel(".I_CONST");
                             astNode* val = createNodeByIntVal($1);
                             addNode(iconst, val);
-                            $$ = passNode("expression_stmt", 1 , iconst);
+                            $$ = passNode(".expression_stmt", 1 , iconst);
                       }
                       | F_CONSTANT {
-                            astNode* fconst = createNodeByLabel("F_CONST");
+                            astNode* fconst = createNodeByLabel(".F_CONST");
                             astNode* fval = createNodeByVal($1);
                             addNode(fconst, fval);
-                            $$ = passNode("expression_stmt", 1 , fconst);
+                            $$ = passNode(".expression_stmt", 1 , fconst);
                       } 
                       | STRING_LITERAL {
-                            astNode* string_literal = createNodeByLabel("STRING_LITERAL");
+                            astNode* string_literal = createNodeByLabel(".STRING_LITERAL");
                             astNode* sval = createNodeByLabel($1);
                             addNode(string_literal, sval);
                             sval->type = TY_ACO;
-                            $$ = passNode("expression_stmt", 1 , string_literal);                            
+                            $$ = passNode(".expression_stmt", 1 , string_literal);                            
                       } 
                       | CHAR_CONST {
-                            astNode* char_literal = createNodeByLabel("CHAR_CONST");
+                            astNode* char_literal = createNodeByLabel(".CHAR_CONST");
                             astNode* cval = createNodeByLabel($1);
                             addNode(char_literal, cval);
                             cval->type = TY_CHAR;
-                            $$ = passNode("expression_stmt", 1 , char_literal);    
+                            $$ = passNode(".expression_stmt", 1 , char_literal);    
                       }
-                      | arr_element {$$ = passNode("expression_stmt" , 1 , $1);} 
+                      | arr_element {$$ = passNode(".expression_stmt" , 1 , $1);} 
                       | IDENTIFIER {
-                        astNode* identifier = createNodeByLabel("id");
+                        astNode* identifier = createNodeByLabel(".id");
                         astNode* actual_id = createNodeByLabel($1);
                         addNode(identifier, actual_id);
-                        $$ = passNode("expression_stmt", 1 , identifier);
+                        $$ = passNode(".expression_stmt", 1 , identifier);
                       }
 ;
 
-unary_expr : EXCLAMATION expression_statement %prec EXCLAMATION {$$ = passNode("unary", 2 , createNodeByLabel("!") , $2);} 
-            | HYPHEN expression_statement %prec UNARY_MINUS {$$ = passNode("unary", 2 , createNodeByLabel("-") , $2);}
+unary_expr : EXCLAMATION expression_statement %prec EXCLAMATION {$$ = passNode(".unary", 2 , createNodeByLabel("!") , $2);} 
+            | HYPHEN expression_statement %prec UNARY_MINUS {$$ = passNode(".unary", 2 , createNodeByLabel("-") , $2);}
 
 functional_call : IDENTIFIER LEFT_ROUND RIGHT_ROUND {
-                    astNode* identifier = createNodeByLabel("id");
+                    astNode* identifier = createNodeByLabel(".id");
                     astNode* actual_id = createNodeByLabel($1);
                     addNode(identifier, actual_id);
                     astNode* left = createNodeByLabel("(");
                     astNode* right = createNodeByLabel(")");
-                    $$ = passNode("functional_call", 3 , identifier, left , right);
+                    $$ = passNode(".functional_call", 3 , identifier, left , right);
                 }
                  | IDENTIFIER LEFT_ROUND arg_list RIGHT_ROUND {
-                    astNode* identifier = createNodeByLabel("id");
+                    astNode* identifier = createNodeByLabel(".id");
                     astNode* actual_id = createNodeByLabel($1);
                     addNode(identifier, actual_id);
                     astNode* left = createNodeByLabel("(");
                     astNode* right = createNodeByLabel(")");
-                    $$ = passNode("functional_call", 4 , identifier, left , $3 ,right);
+                    $$ = passNode(".functional_call", 4 , identifier, left , $3 ,right);
                  }
 ;
-arg_list : arg {$$ = passNode("arg_list", 1 , $1);}
+arg_list : arg {$$ = passNode(".arg_list", 1 , $1);}
            | arg COMMA arg_list {
                 astNode* c = createNodeByLabel(",");
-                $$ = passNode("arg_list", 3 , $1 , c , $3);
+                $$ = passNode(".arg_list", 3 , $1 , c , $3);
            }
 ;
-arg : expression_statement {$$ = passNode("arg" , 1 , $1);}
+arg : expression_statement {$$ = passNode(".arg" , 1 , $1);}
 ;
 arr_element : IDENTIFIER LEFT_SQUARE I_CONSTANT RIGHT_SQUARE {
-                astNode* identifier = createNodeByLabel("id");
+                astNode* identifier = createNodeByLabel(".id");
                 astNode* actual_id = createNodeByLabel($1);
-                astNode* iconst = createNodeByLabel("I_CONST");
+                astNode* iconst = createNodeByLabel(".I_CONST");
                 astNode* val = createNodeByIntVal($3);
                 addNode(iconst, val);
                 addNode(identifier, actual_id);
                 astNode* left = createNodeByLabel("[");
                 astNode* right = createNodeByLabel("]");
-                $$ = passNode("arr_element", 4 , identifier, left , iconst , right);
+                $$ = passNode(".arr_element", 4 , identifier, left , iconst , right);
             }
              | IDENTIFIER LEFT_SQUARE I_CONSTANT RIGHT_SQUARE LEFT_SQUARE I_CONSTANT RIGHT_SQUARE {
-                astNode* identifier = createNodeByLabel("id");
+                astNode* identifier = createNodeByLabel(".id");
                 astNode* actual_id = createNodeByLabel($1);
-                astNode* iconst = createNodeByLabel("I_CONST");
+                astNode* iconst = createNodeByLabel(".I_CONST");
                 astNode* val = createNodeByIntVal($3);
                 addNode(iconst, val);
                 addNode(identifier, actual_id);
@@ -308,24 +308,24 @@ arr_element : IDENTIFIER LEFT_SQUARE I_CONSTANT RIGHT_SQUARE {
                 astNode* right = createNodeByLabel("]");
                 astNode* left_2 = createNodeByLabel("[");
                 astNode* right_2 = createNodeByLabel("]");
-                astNode* iconst_2 = createNodeByLabel("I_CONST");
+                astNode* iconst_2 = createNodeByLabel(".I_CONST");
                 astNode* val_2 = createNodeByIntVal($6);
                 addNode(iconst_2, val_2);
-                $$ = passNode("arr_element", 7 , identifier, left , iconst , right , left_2 , iconst_2 , right_2);
+                $$ = passNode(".arr_element", 7 , identifier, left , iconst , right , left_2 , iconst_2 , right_2);
              }
 ;
 
 /* Assignment */
 assignment_statement : IDENTIFIER EQUAL_SIGN expression_statement %prec EQUAL_SIGN{
-                            astNode* identifier = createNodeByLabel("id");
+                            astNode* identifier = createNodeByLabel(".id");
                             astNode* actual_id = createNodeByLabel($1);
                             addNode(identifier, actual_id);
                             astNode* equalto = createNodeByLabel("=");
-                            $$ = passNode("assign_stmt", 3, identifier, equalto, $3);
+                            $$ = passNode(".assign_stmt", 3, identifier, equalto, $3);
                         }
                        | arr_element EQUAL_SIGN expression_statement %prec EQUAL_SIGN{
                             astNode* equalto = createNodeByLabel("=");
-                            $$ = passNode("assign_stmt", 3, $1, equalto, $3);
+                            $$ = passNode(".assign_stmt", 3, $1, equalto, $3);
                         }
 ;
 
@@ -336,41 +336,41 @@ switch_statment : SWITCH LEFT_ROUND expression_statement RIGHT_ROUND LEFT_CURLY 
                             astNode* right_round = createNodeByLabel(")");
                             astNode* left_curly = createNodeByLabel("{");
                             astNode* right_curly = createNodeByLabel("}");
-                            $$ = passNode("switch_stmt", 7, switch_terminal, left_round, $3, right_round, left_curly, $6, right_curly);
+                            $$ = passNode(".switch_stmt", 7, switch_terminal, left_round, $3, right_round, left_curly, $6, right_curly);
                         }
 ;
-case_list_def : case_list {$$ = passNode("case_list_def", 1, $1);}
-                | case_list default_stmt {$$ = passNode("case_list_def", 2, $1, $2);}
-                | {$$ = passNode("case_list_def", 0);}
+case_list_def : case_list {$$ = passNode(".case_list_def", 1, $1);}
+                | case_list default_stmt {$$ = passNode(".case_list_def", 2, $1, $2);}
+                | {$$ = passNode(".case_list_def", 0);}
 ;
-case_list :  case {$$ = passNode("case_list", 1, $1);} | case_list case {$$ = passNode("case_list", 2, $1, $2);}
+case_list :  case {$$ = passNode(".case_list", 1, $1);} | case_list case {$$ = passNode(".case_list", 2, $1, $2);}
 ;
 case : CASE I_CONSTANT COLON statement_list {
                             astNode* case_st = createNodeByLabel("case");
                             astNode* colon = createNodeByLabel(":");
-                            astNode* iconst = createNodeByLabel("I_CONST");
+                            astNode* iconst = createNodeByLabel(".I_CONST");
                             astNode* val = createNodeByIntVal($2);
                             addNode(iconst, val);
-                            $$ = passNode("case_st", 4, case_st, iconst, colon, $4);
+                            $$ = passNode(".case_st", 4, case_st, iconst, colon, $4);
                         }
        | CASE I_CONSTANT COLON {
                             astNode* case_st = createNodeByLabel("case");
                             astNode* colon = createNodeByLabel(":");
-                            astNode* iconst = createNodeByLabel("I_CONST");
+                            astNode* iconst = createNodeByLabel(".I_CONST");
                             astNode* val = createNodeByIntVal($2);
                             addNode(iconst, val);
-                            $$ = passNode("case_st", 3, case_st, iconst , colon);
+                            $$ = passNode(".case_st", 3, case_st, iconst , colon);
                         }
 ;
 default_stmt : DEFAULT COLON statement_list {
                             astNode* default_st = createNodeByLabel("default");
                             astNode* colon = createNodeByLabel(":");
-                            $$ = passNode("default_stmt", 3, default_st, colon, $3);
+                            $$ = passNode(".default_stmt", 3, default_st, colon, $3);
                         }
               | DEFAULT COLON {
                             astNode* default_st = createNodeByLabel("default");
                             astNode* colon = createNodeByLabel(":");
-                            $$ = passNode("default_stmt", 2, default_st, colon);
+                            $$ = passNode(".default_stmt", 2, default_st, colon);
                         }
 ;
 
@@ -379,26 +379,26 @@ if_statement: IF LEFT_ROUND expression_statement RIGHT_ROUND single_statement el
                             astNode* if_st = createNodeByLabel("if");
                             astNode* left_round = createNodeByLabel("(");
                             astNode* right_round = createNodeByLabel(")");
-                            $$ = passNode("if_stmt", 6, if_st, left_round, $3, right_round, $5, $6);
+                            $$ = passNode(".if_stmt", 6, if_st, left_round, $3, right_round, $5, $6);
                         }
 ;
 else_clause : ELSE single_statement {
                             astNode* else_st = createNodeByLabel("else");
-                            $$ = passNode("else_clause", 2, else_st, $2);
+                            $$ = passNode(".else_clause", 2, else_st, $2);
                         }
-            | {$$ = passNode("else_clause", 0);}
+            | {$$ = passNode(".else_clause", 0);}
 ;
 /* For loop */ 
-for_loop_assignment : assignment_statement {$$ = passNode("for_assign", 1, $1);}
+for_loop_assignment : assignment_statement {$$ = passNode(".for_assign", 1, $1);}
                     | assignment_statement COMMA for_loop_assignment{
                             astNode* comma = createNodeByLabel(",");
-                            $$ = passNode("for_assign", 3, $1, comma, $3);        
+                            $$ = passNode(".for_assign", 3, $1, comma, $3);        
                         }
-                    | {$$ = passNode("for_assign", 0);}
+                    | {$$ = passNode(".for_assign", 0);}
 ;
-for_loop_declaration : declaration {$$ = passNode("for_declare", 1, $1);}
-                       | SEMICOLON {astNode* semicolon = createNodeByLabel(";"); $$ = passNode("for_declare", 1, semicolon);}
-                       | for_loop_assignment SEMICOLON {astNode* semicolon = createNodeByLabel(";"); $$ = passNode("for_declare", 2 , $1, semicolon);}
+for_loop_declaration : declaration {$$ = passNode(".for_declare", 1, $1);}
+                       | SEMICOLON {astNode* semicolon = createNodeByLabel(";"); $$ = passNode(".for_declare", 1, semicolon);}
+                       | for_loop_assignment SEMICOLON {astNode* semicolon = createNodeByLabel(";"); $$ = passNode(".for_declare", 2 , $1, semicolon);}
 ;
 for_statement : FOR LEFT_ROUND for_loop_declaration expr for_loop_assignment RIGHT_ROUND statement_list{
                         astNode* for_st = createNodeByLabel("for");
@@ -411,53 +411,53 @@ for_statement : FOR LEFT_ROUND for_loop_declaration expr for_loop_assignment RIG
 /* declaration */
 declaration : var_type init_declarator_list SEMICOLON{
                         astNode* semicolon = createNodeByLabel(";");
-                        $$ = passNode("declaration", 3, $1, $2, semicolon);
+                        $$ = passNode(".declaration", 3, $1, $2, semicolon);
                     }
 ;
 init_declarator_list : init_declarator_list COMMA init_declarator {
                         astNode* comma = createNodeByLabel(",");
-                        $$ = passNode("init_dec_list", 3, $1, comma, $3);
+                        $$ = passNode(".init_dec_list", 3, $1, comma, $3);
                     }
-                    | init_declarator {$$ = passNode("init_dec_list", 1, $1);}
+                    | init_declarator {$$ = passNode(".init_dec_list", 1, $1);}
 ;
 init_declarator : declarator_var EQUAL_SIGN expression_statement {
                         astNode* equalto = createNodeByLabel("=");
-                        $$ = passNode("init_dec", 3, $1, equalto, $3);
+                        $$ = passNode(".init_dec", 3, $1, equalto, $3);
                     }
-                 | declarator_var {$$ = passNode("init_dec", 1, $1);}
-                 | declarator_arr {$$ = passNode("init_dec", 1, $1);}
+                 | declarator_var {$$ = passNode(".init_dec", 1, $1);}
+                 | declarator_arr {$$ = passNode(".init_dec", 1, $1);}
 ;
 declarator_var : IDENTIFIER {
-                        astNode* identifier = createNodeByLabel("id");
+                        astNode* identifier = createNodeByLabel(".id");
                         astNode* actual_id = createNodeByLabel($1);
                         addNode(identifier, actual_id);
-                        $$ = passNode("dec_var", 1, identifier);
+                        $$ = passNode(".dec_var", 1, identifier);
                     }
 ;
 declarator_arr : IDENTIFIER LEFT_SQUARE I_CONSTANT RIGHT_SQUARE{
-                        astNode* identifier = createNodeByLabel("id");
+                        astNode* identifier = createNodeByLabel(".id");
                         astNode* actual_id = createNodeByLabel($1);
                         addNode(identifier, actual_id);
                         astNode* left_square = createNodeByLabel("[");
                         astNode* right_square = createNodeByLabel("]");
-                        astNode* iconst = createNodeByLabel("I_CONST");
+                        astNode* iconst = createNodeByLabel(".I_CONST");
                         astNode* val = createNodeByIntVal($3);
                         addNode(iconst, val);
-                        $$ = passNode("dec_arr", 4, identifier, left_square, iconst , right_square);
+                        $$ = passNode(".dec_arr", 4, identifier, left_square, iconst , right_square);
                     }
                 | IDENTIFIER LEFT_SQUARE I_CONSTANT RIGHT_SQUARE LEFT_SQUARE I_CONSTANT RIGHT_SQUARE{
-                        astNode* identifier = createNodeByLabel("id");
+                        astNode* identifier = createNodeByLabel(".id");
                         astNode* actual_id = createNodeByLabel($1);
                         addNode(identifier, actual_id);
                         astNode* left_square = createNodeByLabel("[");
                         astNode* right_square = createNodeByLabel("]");
-                        astNode* iconst1 = createNodeByLabel("I_CONST");
+                        astNode* iconst1 = createNodeByLabel(".I_CONST");
                         astNode* val1 = createNodeByIntVal($3);
                         addNode(iconst1, val1);
-                        astNode* iconst2 = createNodeByLabel("I_CONST");
+                        astNode* iconst2 = createNodeByLabel(".I_CONST");
                         astNode* val2 = createNodeByIntVal($6);
                         addNode(iconst2, val2);
-                        $$ = passNode("dec_arr", 7, identifier, left_square, iconst1, right_square, left_square, iconst2, right_square);
+                        $$ = passNode(".dec_arr", 7, identifier, left_square, iconst1, right_square, left_square, iconst2, right_square);
                     }
 ;
 /* While */
@@ -465,7 +465,7 @@ while_statement : WHILE LEFT_ROUND expression_statement RIGHT_ROUND statement_li
                         astNode* while_st = createNodeByLabel("while");
                         astNode* left_round = createNodeByLabel("(");
                         astNode* right_round = createNodeByLabel(")");
-                        $$ = passNode("while_stmt", 5, while_st, left_round, $3, right_round, $5);
+                        $$ = passNode(".while_stmt", 5, while_st, left_round, $3, right_round, $5);
                     }
 ;
 
@@ -473,37 +473,37 @@ while_statement : WHILE LEFT_ROUND expression_statement RIGHT_ROUND statement_li
 print_statement : PRINTF_TOKEN LEFT_ROUND STRING_LITERAL RIGHT_ROUND SEMICOLON{
                         astNode* printf_tk = createNodeByLabel("printf");
                         astNode* left_round = createNodeByLabel("(");
-                        astNode* string_lit = createNodeByLabel("string");
+                        astNode* string_lit = createNodeByLabel(".string");
                         astNode* string_lit_actual = createNodeByLabel($3);
                         addNode(string_lit, string_lit_actual);
                         astNode* right_round = createNodeByLabel(")");
                         astNode* semicolon = createNodeByLabel(";");
-                        $$ = passNode("print_stmt", 5, printf_tk, left_round, string_lit, right_round, semicolon);
+                        $$ = passNode(".print_stmt", 5, printf_tk, left_round, string_lit, right_round, semicolon);
                     }
                  | PRINTF_TOKEN LEFT_ROUND STRING_LITERAL COMMA print_params RIGHT_ROUND SEMICOLON{
                         astNode* printf_tk = createNodeByLabel("printf");
                         astNode* left_round = createNodeByLabel("(");
-                        astNode* string_lit = createNodeByLabel("string");
+                        astNode* string_lit = createNodeByLabel(".string");
                         astNode* string_lit_actual = createNodeByLabel($3);
                         addNode(string_lit, string_lit_actual);
                         astNode* comma = createNodeByLabel(",");
                         astNode* right_round = createNodeByLabel(")");
                         astNode* semicolon = createNodeByLabel(";");
-                        $$ = passNode("print_stmt", 7, printf_tk, left_round, string_lit, comma, $5, right_round, semicolon);
+                        $$ = passNode(".print_stmt", 7, printf_tk, left_round, string_lit, comma, $5, right_round, semicolon);
                  }
 ;
 print_params : IDENTIFIER {
-                astNode* identifier = createNodeByLabel("id");
+                astNode* identifier = createNodeByLabel(".id");
                 astNode* actual_id = createNodeByLabel($1);
                 addNode(identifier, actual_id);
-                $$ = passNode("print_params", 1, identifier);
+                $$ = passNode(".print_params", 1, identifier);
             } 
             | IDENTIFIER COMMA print_params {
-                astNode* identifier = createNodeByLabel("id");
+                astNode* identifier = createNodeByLabel(".id");
                 astNode* actual_id = createNodeByLabel($1);
                 addNode(identifier, actual_id);
                 astNode* comma = createNodeByLabel(",");
-                $$ = passNode("print_params", 3, identifier, comma, $3);
+                $$ = passNode(".print_params", 3, identifier, comma, $3);
             }
 ;
 %%
@@ -512,7 +512,7 @@ void process_expression(astNode* root , table* cur);
 Type expressionTypeCheck(astNode* root, table* scope);
 
 void process_parameter_list(astNode* root, table* cur) {
-    if(strcmp(root->label, "declare_var") == 0) {
+    if(strcmp(root->label, ".declare_var") == 0) {
         int type = root->child[0]->type;
         char *var_id = strdup(root->child[1]->child[0]->label);
         /* printf("param %d %s added\n", type,  var_id); */
@@ -529,7 +529,7 @@ void process_function(astNode* root, table* cur) {
     /* printf("%s\n", root->label); */
     astNode* func_type = root->child[0];
     /* printf("%s\n", func_type->label); */
-    if(strcmp(func_type->label, "var_type") == 0)
+    if(strcmp(func_type->label, ".var_type") == 0)
         func_type = func_type->child[0];
     Type type = func_type->type;
 
@@ -561,7 +561,7 @@ void process_function(astNode* root, table* cur) {
 
 void init_dec_list(astNode* root, table* cur, int type) {
     /* printf("in init_decl_list label = %s\n", root->label); */
-    if(strcmp(root->label, "init_dec") == 0) {
+    if(strcmp(root->label, ".init_dec") == 0) {
         char* var_id = strdup(root->child[0]->child[0]->child[0]->label);
         /* printf("id added = %s\n", var_id); */
         if(searchTable(cur, var_id) || searchTable(globalfuncs, var_id))
@@ -595,14 +595,14 @@ void init_dec_list(astNode* root, table* cur, int type) {
         return;
     } 
 
-    /* if(strcmp(root->label, "expression_stmt") == 0)
+    /* if(strcmp(root->label, ".expression_stmt") == 0)
         init_table(root, cur); */
     for(int i = 0 ; i < root->childCnt; i++)
         init_dec_list(root->child[i], cur, type);
 }
 
 void process_expression(astNode* root , table* cur) {
-    if(strcmp(root->label, "id") == 0) {
+    if(strcmp(root->label, ".id") == 0) {
         char *id = strdup(root->child[0]->label);
         /* printTable(globalfuncs); */
         if(!isDeclared(id, cur) && !searchTable(globalfuncs, id))
@@ -626,27 +626,27 @@ void process_declaration(astNode* root, table* cur) {
 
 void init_table(astNode* root, table* cur_scope) {
     /* printf("label = %s\n", root->label); */
-    if(strcmp(root->label, "func_declaration") == 0) {
+    if(strcmp(root->label, ".func_declaration") == 0) {
         /* printf("func_dec\n"); */
         table* child = changeScope(cur_scope);
         process_function(root , child);
         return;
     }
 
-    if(strcmp(root->label, "compound_stmt") == 0 && root->childCnt > 2) {
+    if(strcmp(root->label, ".compound_stmt") == 0 && root->childCnt > 2) {
         /* printf("compound\n"); */
         table* child = changeScope(cur_scope);
         init_table(root->child[1], child);
         return;
     }
 
-    if(strcmp(root->label, "declaration") == 0) {
+    if(strcmp(root->label, ".declaration") == 0) {
         /* printf("dec\n"); */
         process_declaration(root,  cur_scope);
         return;
     }
 
-    if(strcmp(root->label, "assign_stmt") == 0) {
+    if(strcmp(root->label, ".assign_stmt") == 0) {
         /* printf("assgn\n"); */
         char* var_id = root->child[0]->child[0]->label;
         /* printf("checking for %s\n", var_id); */
@@ -656,7 +656,7 @@ void init_table(astNode* root, table* cur_scope) {
         return;
     }
 
-    if(strcmp(root->label, "expression_stmt") == 0) {
+    if(strcmp(root->label, ".expression_stmt") == 0) {
         /* printf("expr\n"); */
         process_expression(root, cur_scope);
         return;
@@ -671,29 +671,29 @@ void init_table(astNode* root, table* cur_scope) {
         return;
     }
 
-    if(strcmp(root->label, "print_stmt") == 0) {
+    if(strcmp(root->label, ".print_stmt") == 0) {
         process_printf(root, cur_scope);
         return;
     }
 
-    if(strcmp(root->label, "case_st") == 0 && root->childCnt == 4) {
+    if(strcmp(root->label, ".case_st") == 0 && root->childCnt == 4) {
         table* child = changeScope(cur_scope);
         init_table(root->child[3], child);
         return;
     }
 
-    /* if(strcmp(root->label, "for_declare") == 0)  {
+    /* if(strcmp(root->label, ".for_declare") == 0)  {
         table* child = changeScope(cur_scope);
         init_table(root->child[0], child);
-    } else if(strcmp(root->label, "compound_stmt") == 0 && root->childCnt > 2) {
+    } else if(strcmp(root->label, ".compound_stmt") == 0 && root->childCnt > 2) {
         table* child = changeScope(cur_scope);
         init_table(root->child[1], child);
         return;
     }
-    else if(strcmp(root->label, "declaration") == 0) {
+    else if(strcmp(root->label, ".declaration") == 0) {
         process_declaration(root, cur_scope);
         return;
-    } else if(strcmp(root->label, "expression_stmt") == 0 || strcmp(root->label, "assign_stmt") == 0) {
+    } else if(strcmp(root->label, ".expression_stmt") == 0 || strcmp(root->label, ".assign_stmt") == 0) {
         process_expression(root, cur_scope);
         return;
     } */
@@ -714,7 +714,7 @@ void printTable(table* cur) {
 void param_dfs(astNode *root, int *cur, int *args, table* scope) {
     if(root == NULL)
         return;
-    if (strcmp(root->label, "arg") == 0) {
+    if (strcmp(root->label, ".arg") == 0) {
         /* printf("here\n"); */
         Type type = expressionTypeCheck(root -> child[0], scope);
         args[*cur] = type;
@@ -792,7 +792,7 @@ void argListTypeCheck(astNode* root, table* scope) {
 
 Type expressionTypeCheck(astNode* root, table* scope){
     /* printf("id = %s type = %d child = %d\n", root->label, root->type, root->childCnt); */
-    if(root->childCnt == 1 && strcmp(root->label, "id") == 0)  {
+    if(root->childCnt == 1 && strcmp(root->label, ".id") == 0)  {
         /* printf("here id = %s\n", root->child[0]->label ); */
         /* printf("%d\n", typevar(scope, root->child[0]->label)); */
         return typevar(scope, root->child[0]->label);
@@ -802,7 +802,7 @@ Type expressionTypeCheck(astNode* root, table* scope){
         return root->type;
     }
     else if(root->childCnt == 1) {
-        if (strcmp(root -> child[0] -> label, "unary") == 0){
+        if (strcmp(root -> child[0] -> label, ".unary") == 0){
             /* printf("id = %s type = %d %d\n", root->label, root->type, root->childCnt); */
             Type unaryType = expressionTypeCheck(root-> child[0] -> child[1], scope);
             if(unaryType != TY_INT && unaryType != TY_FLOAT)
@@ -810,11 +810,11 @@ Type expressionTypeCheck(astNode* root, table* scope){
             if(strcmp(root -> child[0] -> child[0] -> label , "-") == 0)
                 return unaryType;
             return TY_INT;
-        } else if(strcmp(root -> child[0] -> label, "assign_stmt") == 0){
+        } else if(strcmp(root -> child[0] -> label, ".assign_stmt") == 0){
             /* printf("id = %s type = %d %d\n", root->label, root->type, root->childCnt); */
             Type rightType = expressionTypeCheck(root -> child[0] -> child[2], scope);
             /* printf("right = %d %s\n", rightType, root -> child[0] -> child[2] -> label); */
-            if (strcmp(root -> child[0] -> child[0] -> label, "id") == 0){
+            if (strcmp(root -> child[0] -> child[0] -> label, ".id") == 0){
                 Type leftType = typevar(scope, root -> child[0] -> child[0] -> child[0] -> label);
                 if((leftType == TY_INT || leftType == TY_FLOAT) && (rightType == TY_INT || rightType == TY_FLOAT))
                     return leftType;
@@ -840,11 +840,11 @@ Type expressionTypeCheck(astNode* root, table* scope){
                     err("Error : Incompatible type left side and right side of assignment, Expected char\n");
                 return TY_CHAR;
             }
-        } else if(strcmp(root -> child[0] -> label, "functional_call") == 0){
+        } else if(strcmp(root -> child[0] -> label, ".functional_call") == 0){
             if(root -> child[0] -> childCnt > 3) 
                 argListTypeCheck(root -> child[0], scope);
             return typevar(globalfuncs, root -> child[0] -> child[0] -> child[0] -> label);
-        } else if(strcmp(root -> child[0] -> label, "arr_element") == 0){
+        } else if(strcmp(root -> child[0] -> label, ".arr_element") == 0){
             CheckArray(root -> child[0], scope);
             Type leftType = typevar(scope, root -> child[0] -> child[0] -> child[0] -> label);
             if (leftType == TY_AIO || leftType == TY_AIT){
@@ -881,7 +881,7 @@ Type expressionTypeCheck(astNode* root, table* scope){
 }
 
 void init_dec_type(astNode* root, table* scope, Type type) {
-    if(strcmp(root-> label , "init_dec") == 0 && root->childCnt > 1) {
+    if(strcmp(root-> label , ".init_dec") == 0 && root->childCnt > 1) {
         Type exprType = expressionTypeCheck(root -> child[2], scope);
         /* printf("Type for declaration = %d and type being checked %d\n", exprType, type); */
         if(exprType == TY_VOID || exprType == TY_UNDEFINED)
@@ -923,13 +923,13 @@ void returnTypeCheck(astNode* root, table* scope) {
 
 void TypeCheck(astNode* root, table* scope) {
 
-    if(strcmp(root -> label, "func_declaration") == 0)
+    if(strcmp(root -> label, ".func_declaration") == 0)
         funcTypeGlobal = root->child[0]->type;
     
-    if(strcmp(root -> label, "main_func") == 0)
+    if(strcmp(root -> label, ".main_func") == 0)
         funcTypeGlobal = TY_INT;
 
-    if(strcmp(root->label, "compound_stmt") == 0 && root->childCnt > 2) {
+    if(strcmp(root->label, ".compound_stmt") == 0 && root->childCnt > 2) {
         /* printf("compound\n"); */
         table* child = nextScope(scope);
         /* printTable(child); */
@@ -937,24 +937,24 @@ void TypeCheck(astNode* root, table* scope) {
         return;
     }
 
-   if(strcmp(root->label, "declaration") == 0) {
+   if(strcmp(root->label, ".declaration") == 0) {
         /* printf("dec\n"); */
         declarationTypeCheck(root,  scope);
         return;
     }
 
-    if(strcmp(root->label, "expression_stmt") == 0) {
+    if(strcmp(root->label, ".expression_stmt") == 0) {
         /* printf("expr\n"); */
         expressionTypeCheck(root, scope);
         return;
     }
 
-    if(strcmp(root -> label, "return_stmt") == 0) {
+    if(strcmp(root -> label, ".return_stmt") == 0) {
         returnTypeCheck(root, scope);
         return;
     }
 
-    if(strcmp(root->label, "case_st") == 0 && root->childCnt == 4) {
+    if(strcmp(root->label, ".case_st") == 0 && root->childCnt == 4) {
         table* child = nextScope(scope);
         TypeCheck(root->child[3], child);
         return;
@@ -990,7 +990,7 @@ int main() {
     printTable(globalfuncs); */
     /* printf("\n\n----Initiating type check-----\n\n"); */
     TypeCheck(root, cur_table);
-    /* printf("Type checking over\n"); */
+    resetTables(cur_table);
 }
 
 int yyerror() {

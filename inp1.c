@@ -1,7 +1,14 @@
+int func(int a, int b){
+    int c = a * b;
+    return c * 5;
+}
+
 main(){
-    for(int i = 0; i < 10; i = i + 1){
-        for(int j = i; j < 10; j = j + 1){
-            continue;
-        }
+    int a = 5;
+    int x = func(a, 1);
+    while(x > 0){
+        printf("%d", x);
+        x = x - 1;
     }
+    return -1;
 }

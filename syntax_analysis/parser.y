@@ -1,16 +1,24 @@
 %{
-    #include <stdio.h>
-    #include <stdlib.h>    
+    #include "stdio.h"
 %}
 
-%token BREAK CASE CHAR CONTINUE DEFAULT ELSE FLOAT FOR IF RETURN INT SWITCH VOID WHILE MAIN_FUNCTION IDENTIFIER STRING_LITERAL I_CONSTANT F_CONSTANT AND_OP OR_OP LE_OP GE_OP EQ_OP NE_OP EQUAL_SIGN SEMICOLON LEFT_CURLY RIGHT_CURLY COMMA COLON LEFT_ROUND RIGHT_ROUND LEFT_SQUARE RIGHT_SQUARE EXCLAMATION HYPHEN PLUS STAR SLASH LT_OP GT_OP PERCENT UNARY_MINUS PRINTF_TOKEN
 
-%type s main_func functional_declaration P var_type func_type func_declarator param_list declare_var
-%type compound_statement statement_list single_statement switch_statment for_statement if_statement while_statement declaration jump_statement print_statement expr return_statement
-%type expression_statement unary_expr functional_call arr_element assignment_statement
-%type arg_list arg case_list_def case_list default_stmt case
-%type else_clause for_loop_assignment for_loop_declaration 
-%type init_declarator init_declarator_list declarator_arr declarator_var print_params
+%token BREAK CASE CHAR CONTINUE DEFAULT ELSE FLOAT FOR IF RETURN INT SWITCH VOID WHILE MAIN_FUNCTION
+%token IDENTIFIER STRING_LITERAL CHAR_CONST
+%token I_CONSTANT 
+%token F_CONSTANT
+%token  AND_OP OR_OP LE_OP GE_OP EQ_OP NE_OP EQUAL_SIGN
+%token  SEMICOLON LEFT_CURLY RIGHT_CURLY COMMA COLON LEFT_ROUND RIGHT_ROUND LEFT_SQUARE RIGHT_SQUARE
+%token  EXCLAMATION HYPHEN PLUS STAR SLASH LT_OP GT_OP PERCENT UNARY_MINUS
+%token  PRINTF_TOKEN
+
+
+%type  s main_func functional_declaration P var_type func_type func_declarator param_list declare_var
+%type  compound_statement statement_list single_statement switch_statment for_statement if_statement while_statement declaration jump_statement print_statement expr return_statement 
+%type  expression_statement unary_expr functional_call arr_element assignment_statement
+%type  arg_list arg case_list_def case_list default_stmt case
+%type  else_clause for_loop_assignment for_loop_declaration 
+%type  init_declarator init_declarator_list declarator_arr declarator_var print_params
 
 
 %right EQUAL_SIGN
@@ -23,49 +31,51 @@
 %right EXCLAMATION UNARY_MINUS
 %%
 /* Functional declarations */
-s : P
+s : P  
 ;
 
 P : main_func  
-   | functional_declaration P
-
-functional_declaration : func_type func_declarator compound_statement
+   | functional_declaration P 
 ;
 
-var_type : INT
-          | CHAR
-          | FLOAT
+functional_declaration : func_type func_declarator compound_statement 
 ;
 
-func_type : var_type 
-            | VOID
+var_type : INT  
+          | CHAR 
+          | FLOAT 
 ;
 
-func_declarator : IDENTIFIER LEFT_ROUND RIGHT_ROUND
-                | IDENTIFIER LEFT_ROUND param_list RIGHT_ROUND
+func_type : var_type  
+            | VOID 
+;
+
+func_declarator : IDENTIFIER LEFT_ROUND RIGHT_ROUND  
+                | IDENTIFIER LEFT_ROUND param_list RIGHT_ROUND 
 ;
 
 param_list : declare_var  
-            | declare_var COMMA param_list
+            | declare_var COMMA param_list 
 ;
 
-declare_var : var_type IDENTIFIER 
+declare_var : var_type IDENTIFIER
 ;
 
 /* Main Function Starts below */
-main_func : MAIN_FUNCTION LEFT_ROUND RIGHT_ROUND compound_statement
-            | INT MAIN_FUNCTION LEFT_ROUND RIGHT_ROUND compound_statement
+main_func : MAIN_FUNCTION LEFT_ROUND RIGHT_ROUND compound_statement 
+            | INT MAIN_FUNCTION LEFT_ROUND RIGHT_ROUND compound_statement 
             | VOID MAIN_FUNCTION LEFT_ROUND RIGHT_ROUND compound_statement
 ;
 
-compound_statement : LEFT_CURLY RIGHT_CURLY
-            | LEFT_CURLY statement_list RIGHT_CURLY
+compound_statement : LEFT_CURLY RIGHT_CURLY 
+            | LEFT_CURLY statement_list RIGHT_CURLY 
 ;
 
 statement_list : single_statement 
-            | single_statement statement_list
+            | single_statement statement_list 
 ;
-single_statement : switch_statment
+
+single_statement : switch_statment 
                 | expr 
                 | if_statement 
                 | print_statement 
@@ -78,19 +88,19 @@ single_statement : switch_statment
 ;
 
 jump_statement : BREAK SEMICOLON 
-                | CONTINUE SEMICOLON
+                | CONTINUE SEMICOLON 
 ;
 
 return_statement : RETURN expr 
 ;
 /* Expression */
 expr : SEMICOLON 
-        | expression_statement SEMICOLON
+        | expression_statement SEMICOLON 
         | expr COMMA expr SEMICOLON 
       
 ;
-expression_statement : expression_statement OR_OP expression_statement
-				      | expression_statement AND_OP expression_statement
+expression_statement : expression_statement OR_OP expression_statement  
+				      | expression_statement AND_OP expression_statement 
 				      | expression_statement GT_OP expression_statement  
 			          | expression_statement LT_OP expression_statement 
 				      | expression_statement GE_OP expression_statement 
@@ -106,14 +116,15 @@ expression_statement : expression_statement OR_OP expression_statement
                       | assignment_statement 
 				      | functional_call 
 				      | LEFT_ROUND expression_statement RIGHT_ROUND 
-				      | I_CONSTANT 
+				      |  I_CONSTANT 
                       | F_CONSTANT 
-                      | STRING_LITERAL 
-                      | arr_element  
+                      | STRING_LITERAL
+                      | CHAR_CONST 
+                      | arr_element 
                       | IDENTIFIER 
 ;
 
-unary_expr : EXCLAMATION expression_statement %prec EXCLAMATION 
+unary_expr : EXCLAMATION expression_statement %prec EXCLAMATION
             | HYPHEN expression_statement %prec UNARY_MINUS 
 
 functional_call : IDENTIFIER LEFT_ROUND RIGHT_ROUND 
@@ -138,8 +149,9 @@ switch_statment : SWITCH LEFT_ROUND expression_statement RIGHT_ROUND LEFT_CURLY 
 ;
 case_list_def : case_list 
                 | case_list default_stmt 
+                | 
 ;
-case_list :  case | case_list case 
+case_list :  case | case_list case
 ;
 case : CASE I_CONSTANT COLON statement_list 
        | CASE I_CONSTANT COLON 
@@ -149,16 +161,19 @@ default_stmt : DEFAULT COLON statement_list
 ;
 
 /* if else */
-if_statement: IF LEFT_ROUND expression_statement RIGHT_ROUND single_statement else_clause 
+if_statement: IF LEFT_ROUND expression_statement RIGHT_ROUND single_statement else_clause
 ;
 else_clause : ELSE single_statement 
+            | 
 ;
 /* For loop */ 
 for_loop_assignment : assignment_statement 
                     | assignment_statement COMMA for_loop_assignment
+                    | 
 ;
-for_loop_declaration : declaration 
+for_loop_declaration : declaration
                        | SEMICOLON 
+                       | for_loop_assignment SEMICOLON 
 ;
 for_statement : FOR LEFT_ROUND for_loop_declaration expr for_loop_assignment RIGHT_ROUND statement_list
 ;
@@ -167,7 +182,7 @@ for_statement : FOR LEFT_ROUND for_loop_declaration expr for_loop_assignment RIG
 declaration : var_type init_declarator_list SEMICOLON
 ;
 init_declarator_list : init_declarator_list COMMA init_declarator 
-                    | init_declarator 
+                    | init_declarator
 ;
 init_declarator : declarator_var EQUAL_SIGN expression_statement 
                  | declarator_var 
@@ -175,8 +190,8 @@ init_declarator : declarator_var EQUAL_SIGN expression_statement
 ;
 declarator_var : IDENTIFIER 
 ;
-declarator_arr : IDENTIFIER LEFT_SQUARE expression_statement RIGHT_SQUARE
-                | IDENTIFIER LEFT_SQUARE expression_statement RIGHT_SQUARE LEFT_SQUARE expression_statement RIGHT_SQUARE
+declarator_arr : IDENTIFIER LEFT_SQUARE I_CONSTANT RIGHT_SQUARE
+                | IDENTIFIER LEFT_SQUARE I_CONSTANT RIGHT_SQUARE LEFT_SQUARE I_CONSTANT RIGHT_SQUARE
 ;
 /* While */
 while_statement : WHILE LEFT_ROUND expression_statement RIGHT_ROUND statement_list
@@ -185,7 +200,6 @@ while_statement : WHILE LEFT_ROUND expression_statement RIGHT_ROUND statement_li
 /* Printf and scanf */
 print_statement : PRINTF_TOKEN LEFT_ROUND STRING_LITERAL RIGHT_ROUND SEMICOLON
                  | PRINTF_TOKEN LEFT_ROUND STRING_LITERAL COMMA print_params RIGHT_ROUND SEMICOLON
-;
 print_params : IDENTIFIER 
             | IDENTIFIER COMMA print_params 
 ;
@@ -193,7 +207,7 @@ print_params : IDENTIFIER
 
 int main() {
     yyparse();
-    printf("\n\n\n----Syntax Analysis done----\n\n\n");
+    printf("Syntax analysis done\n");
 }
 
 int yyerror() {

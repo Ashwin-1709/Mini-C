@@ -88,7 +88,7 @@ char *find_id(astNode *root) {
 void arg_dfs(astNode *root, int *cur, int *args) {
     if (root == NULL)
         return;
-    if (strcmp(root->label, "declare_var") == 0) {
+    if (strcmp(root->label, ".declare_var") == 0) {
         Type type = root->child[0]->type;
         args[*cur] = type;
         *cur = *cur + 1;

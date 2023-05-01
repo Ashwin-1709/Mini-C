@@ -35,14 +35,14 @@ WHITESPACE      [ \t\v\n\f]
 {LETTER}{ALNUM}*					{return IDENTIFIER;}
 
 ("0"|{NONZERO}({DIGIT}*))				{return I_CONSTANT; }
-"'"([^'\\\n]|{ESCAPE_SEQUENCE})+"'"		{return I_CONSTANT; }
+"'"[^\']"'"                            {return CHAR_CONST;}
 
 {DIGIT}+{EXPONENT}{FLOAT_SUFFIX}?				{ return F_CONSTANT; }
 {DIGIT}*"."{DIGIT}+{EXPONENT}?{FLOAT_SUFFIX}?			{ return F_CONSTANT; }
 {DIGIT}+"."{EXPONENT}?{FLOAT_SUFFIX}?			{ return F_CONSTANT; }
 
 (\"([^"\\\n]|{ESCAPE_SEQUENCE})*\"{WHITESPACE}*)+	{ return STRING_LITERAL; }
-
+"'"{ESCAPE_SEQUENCE}"'"                            { return CHAR_CONST;}
 "&&"					{ return AND_OP; }
 "||"					{ return OR_OP; }
 "<="					{ return LE_OP; }

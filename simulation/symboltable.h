@@ -55,4 +55,5 @@ void insertfunc(char *id, Type type, table *curtable, int *args, bool hasargs, a
 table *nextScope(table* cur);
 Type typevar(table *cur, char *id);
 entry* getEntry(table* cur, char *id);
+void resetTables(table* scope);
 #endif
