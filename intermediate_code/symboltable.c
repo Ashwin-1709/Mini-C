@@ -120,13 +120,14 @@ table *changeScope(table *cur) {
     return child;
 }
 
-void insertfunc(char *id, Type type, table *curtable, int *args, bool hasargs, astNode* fnode) {
+void insertfunc(char *id, Type type, table *curtable, int *args, bool hasargs,
+                astNode *fnode) {
     entry *cur = (entry *)(malloc(sizeof(entry)));
     cur->id = strdup(id);
     cur->type = type;
     cur->isfunc = true;
     int count = 0;
-    if(hasargs) {
+    if (hasargs) {
         for (int j = 0; j < 50; j++) {
             if (args[j] == 100) {
                 count = j;
@@ -135,8 +136,8 @@ void insertfunc(char *id, Type type, table *curtable, int *args, bool hasargs, a
         }
         // printf("argcount = %d\n", count);
         cur->x_lim = count;
-    }
-    else cur->x_lim = -1;
+    } else
+        cur->x_lim = -1;
     cur->y_lim = -1;
     if (hasargs)
         cur->parameters = args;

@@ -50,6 +50,7 @@ bool searchTable(table *cur, char *id);
 bool isDeclared(char *id, table *cur);
 Type typevar(table *cur, char *id);
 table *changeScope(table *cur);
-void insertfunc(char *id, Type type, table *curtable, int *args, bool hasargs, astNode* fnode);
+void insertfunc(char *id, Type type, table *curtable, int *args, bool hasargs,
+                astNode *fnode);
 
 #endif
