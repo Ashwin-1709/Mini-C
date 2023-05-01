@@ -39,8 +39,7 @@ WHITESPACE      [ \t\v\n\f]
 %%
 "/*"(.|\n|\s)*"*/"                                 { for(int i=0;i<strlen(yytext);i++){if(yytext[i]=='\n'){line++;}}
     /*comment();*/ }
-"//".*                                    {line++; /* consume //-comment */ }
-("\n")+                     {line+=strlen(yytext);}
+"//".*                                    {/*line++;  consume //-comment */ }
 "break"					{printf("%d\t%s\t%s\n",line,yytext,"BREAK");}
 "case"					{printf("%d\t%s\t%s\n",line,yytext,"CASE"); }
 "char"					{printf("%d\t%s\t%s\n",line,yytext,"CHAR"); }
@@ -100,6 +99,7 @@ WHITESPACE      [ \t\v\n\f]
 "<"					{printf("%d\t%s\t%s\n",line,yytext,"LT_OP");  }
 ">"					{printf("%d\t%s\t%s\n",line,yytext,"GT_OP");  }
 
+"\n"+                     {line++;}
 {WHITESPACE}+					{ for(int i=0;i<strlen(yytext);i++){if(yytext[i]=='\n'){line++;}}}
 .               			{ error("Error in lexical Analysis\n"); }
 %%
