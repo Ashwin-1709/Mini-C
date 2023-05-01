@@ -20,6 +20,8 @@ typedef struct astNode {
     struct astNode *child[55];
     Type type;
     char label[200];
+    int tIdx;
+    char varname[50];
 } astNode;
 
 #include "symboltable.h"
