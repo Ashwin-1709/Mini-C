@@ -1,6 +1,6 @@
 CXX = g++
 CC = gcc
-CFLAGS = -g -Wall
+CFLAGS = -g -Wall -Wno-format-overflow -Wshadow -Wconversion -Wpedantic -Wno-float-equal -Wno-variadic-macros
 
 all: lex.yy.c y.tab.c intermediate.out
 

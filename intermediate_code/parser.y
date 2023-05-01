@@ -1,4 +1,4 @@
-%{;
+%{
 #include "ast.h"
 #include "stack.h"
 #include "y.tab.h"
@@ -238,7 +238,7 @@ expression_statement : expression_statement OR_OP expression_statement {
         sprintf(buf, "t%d := t%d&&t%d\n", temp_var, $1->tIdx, $3->tIdx);
         strcat(globalFor, buf);
     }
-    $$->tIdx=temp_var++;
+    $$->tIdx = temp_var++;
 }
 | expression_statement GT_OP expression_statement  {
     $$ = passNode("expression_stmt", 3, $1, createNodeByLabel(">"), $3);
@@ -249,7 +249,7 @@ expression_statement : expression_statement OR_OP expression_statement {
         sprintf(buf, "t%d := t%d>t%d\n", temp_var, $1->tIdx, $3->tIdx);
         strcat(globalFor, buf);
     }
-    $$->tIdx=temp_var++;
+    $$->tIdx = temp_var++;
 }
 | expression_statement LT_OP expression_statement {
     $$ = passNode("expression_stmt", 3, $1, createNodeByLabel("<"), $3);
@@ -260,29 +260,29 @@ expression_statement : expression_statement OR_OP expression_statement {
         sprintf(buf, "t%d := t%d<t%d\n", temp_var, $1->tIdx, $3->tIdx);
         strcat(globalFor, buf);
     }
-    $$->tIdx=temp_var++;
+    $$->tIdx = temp_var++;
 }
 | expression_statement GE_OP expression_statement {
     $$ = passNode("expression_stmt", 3, $1, createNodeByLabel(">="), $3);
     if (!is_for) {
-        printf("t%d := t%d>=t%d\n", temp_var, $1->tIdx, $3->tIdx);
+        printf("t%d := t%d>= t%d\n", temp_var, $1->tIdx, $3->tIdx);
     } else {
         char* buf = calloc(30, sizeof(char));
-        sprintf(buf, "t%d := t%d>=t%d\n", temp_var, $1->tIdx, $3->tIdx);
+        sprintf(buf, "t%d := t%d>= t%d\n", temp_var, $1->tIdx, $3->tIdx);
         strcat(globalFor, buf);
     }
-    $$->tIdx=temp_var++;
+    $$->tIdx = temp_var++;
 }
 | expression_statement LE_OP expression_statement {
     $$ = passNode("expression_stmt", 3, $1, createNodeByLabel("<="), $3);
     if (!is_for) {
-        printf("t%d := t%d<=t%d\n", temp_var, $1->tIdx, $3->tIdx);
+        printf("t%d := t%d<= t%d\n", temp_var, $1->tIdx, $3->tIdx);
     } else {
         char* buf = calloc(30, sizeof(char));
-        sprintf(buf, "t%d := t%d<=t%d\n", temp_var, $1->tIdx, $3->tIdx);
+        sprintf(buf, "t%d := t%d<= t%d\n", temp_var, $1->tIdx, $3->tIdx);
         strcat(globalFor, buf);
     }
-    $$->tIdx=temp_var++;
+    $$->tIdx = temp_var++;
 }
 | expression_statement PLUS expression_statement {
     $$ = passNode("expression_stmt", 3, $1, createNodeByLabel("+"), $3);
@@ -293,7 +293,7 @@ expression_statement : expression_statement OR_OP expression_statement {
         sprintf(buf, "t%d := t%d + t%d\n", temp_var, $1->tIdx, $3->tIdx);
         strcat(globalFor, buf);
     }
-    $$->tIdx=temp_var++;
+    $$->tIdx = temp_var++;
 }
 | expression_statement HYPHEN expression_statement {
     $$ = passNode("expression_stmt", 3, $1, createNodeByLabel("-"), $3);
@@ -304,7 +304,7 @@ expression_statement : expression_statement OR_OP expression_statement {
         sprintf(buf, "t%d := t%d-t%d\n", temp_var, $1->tIdx, $3->tIdx);
         strcat(globalFor, buf);
     }
-    $$->tIdx=temp_var++;
+    $$->tIdx = temp_var++;
 }
 | expression_statement STAR expression_statement {
     $$ = passNode("expression_stmt", 3, $1, createNodeByLabel("*"), $3);
@@ -315,7 +315,7 @@ expression_statement : expression_statement OR_OP expression_statement {
         sprintf(buf, "t%d := t%d*t%d\n", temp_var, $1->tIdx, $3->tIdx);
         strcat(globalFor, buf);
     }
-    $$->tIdx=temp_var++;
+    $$->tIdx = temp_var++;
 }
 | expression_statement SLASH expression_statement {
     $$ = passNode("expression_stmt", 3, $1, createNodeByLabel("/"), $3);
@@ -326,40 +326,40 @@ expression_statement : expression_statement OR_OP expression_statement {
         sprintf(buf, "t%d := t%d/t%d\n", temp_var, $1->tIdx, $3->tIdx);
         strcat(globalFor, buf);
     }
-    $$->tIdx=temp_var++;
+    $$->tIdx = temp_var++;
 }
 | expression_statement PERCENT expression_statement {
     $$ = passNode("expression_stmt", 3, $1, createNodeByLabel("%"), $3);
     if (!is_for) {
-        printf("t%d := t%d\%t%d\n", temp_var, $1->tIdx, $3->tIdx);
+        printf("t%d := t%d%%t%d\n", temp_var, $1->tIdx, $3->tIdx);
     } else {
         char* buf = calloc(30, sizeof(char));
-        sprintf(buf, "t%d := t%d\%t%d\n", temp_var, $1->tIdx, $3->tIdx);
+        sprintf(buf, "t%d := t%d%%t%d\n", temp_var, $1->tIdx, $3->tIdx);
         strcat(globalFor, buf);
     }
-    $$->tIdx=temp_var++;
+    $$->tIdx = temp_var++;
 }
 | expression_statement EQ_OP expression_statement {
     $$ = passNode("expression_stmt", 3, $1, createNodeByLabel("=="), $3);
     if (!is_for) {
-        printf("t%d := t%d==t%d\n", temp_var, $1->tIdx, $3->tIdx);
+        printf("t%d := t%d == t%d\n", temp_var, $1->tIdx, $3->tIdx);
     } else {
         char* buf = calloc(30, sizeof(char));
-        sprintf(buf, "t%d := t%d==t%d\n", temp_var, $1->tIdx, $3->tIdx);
+        sprintf(buf, "t%d := t%d == t%d\n", temp_var, $1->tIdx, $3->tIdx);
         strcat(globalFor, buf);
     }
-    $$->tIdx=temp_var++;
+    $$->tIdx = temp_var++;
 }
 | expression_statement NE_OP expression_statement {
     $$ = passNode("expression_stmt", 3, $1, createNodeByLabel("!="), $3);
     if (!is_for) {
-        printf("t%d := t%d!=t%d\n", temp_var, $1->tIdx, $3->tIdx);
+        printf("t%d := t%d!= t%d\n", temp_var, $1->tIdx, $3->tIdx);
     } else {
         char* buf = calloc(30, sizeof(char));
-        sprintf(buf, "t%d := t%d!=t%d\n", temp_var, $1->tIdx, $3->tIdx);
+        sprintf(buf, "t%d := t%d!= t%d\n", temp_var, $1->tIdx, $3->tIdx);
         strcat(globalFor, buf);
     }
-    $$->tIdx=temp_var++;
+    $$->tIdx = temp_var++;
 }
 | unary_expr { $$ = passNode("expression_stmt", 1, $1); }
 | assignment_statement {
@@ -398,7 +398,7 @@ expression_statement : expression_statement OR_OP expression_statement {
     astNode* fval = createNodeByVal($1);
     addNode(fconst, fval);
     $$ = passNode("expression_stmt", 1, fconst);
-    $$->tIdx=temp_var++;
+    $$->tIdx = temp_var++;
 }
 | STRING_LITERAL {
     if (!is_for) {
@@ -412,7 +412,7 @@ expression_statement : expression_statement OR_OP expression_statement {
     astNode* sval = createNodeByLabel($1);
     addNode(string_literal, sval);
     $$ = passNode("expression_stmt", 1, string_literal);
-    $$->tIdx=temp_var++;
+    $$->tIdx = temp_var++;
 }
 | arr_element { $$ = passNode("expression_stmt", 1, $1); }
 | IDENTIFIER {
@@ -502,7 +502,6 @@ assignment_statement : IDENTIFIER EQUAL_SIGN expression_statement %prec EQUAL_SI
         strcat(globalFor, buf);
     }
     $$->tIdx = $3->tIdx;
-    printf("");
 }
 | arr_element EQUAL_SIGN expression_statement %prec EQUAL_SIGN{
     astNode* equalto = createNodeByLabel("=");
@@ -554,7 +553,7 @@ if_statement: IF LEFT_ROUND expression_statement {
     printf("if !(t%d) goto L%d\n", $3->tIdx, ifIdx);
     stackPush(ifstack, ifIdx++);
 } RIGHT_ROUND single_statement {
-    int lbl=stackPop(ifstack);
+    unsigned int lbl = stackPop(ifstack);
     printf("goto L%d\n", ifIdx);
     stackPush(ifstack, ifIdx++);
     printf("\nL%d:\n", lbl);
