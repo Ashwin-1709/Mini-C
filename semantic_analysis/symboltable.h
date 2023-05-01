@@ -51,8 +51,9 @@ bool searchTable(table *cur, char *id);
 bool isDeclared(char *id, table *cur);
 Type typevar(table *cur, char *id);
 table *changeScope(table *cur);
-void insertfunc(char *id, Type type, table *curtable, int *args, bool hasargs, astNode* fnode);
-table *nextScope(table* cur);
+void insertfunc(char *id, Type type, table *curtable, int *args, bool hasargs,
+                astNode *fnode);
+table *nextScope(table *cur);
 Type typevar(table *cur, char *id);
-entry* getEntry(table* cur, char *id);
+entry *getEntry(table *cur, char *id);
 #endif

@@ -1,5 +1,5 @@
-#include "symboltable.h"
 #include "ast.h"
+#include "symboltable.h"
 
 int main() {
     // int x = 11;
@@ -21,13 +21,13 @@ int main() {
     // table *child = changeScope(parent);
     // int x = 10, y = 1;
     // insertvar("func" , 0 , (void *)&x , -1 , -1 , parent);
-    // printf("%d %d\n", searchTable(parent, "func") , searchTable(child,  "func"));
-    // insertvar("okabc" , 0 , (void *)&y , -1 , -1 , child);
-    // printf("%d %d\n", isDeclared("func", child), isDeclared("okabc", parent));
-    // char c = 'a';
-    // insertvar("c" , type("char"), (void *)&c , -1 , -1 , child);
-    // printf("%d %d\n", typevar(child, "c") , typevar(parent, "c"));
-    // printf("%s %s %s %s %s %s\n", retype(0), retype(1) , retype(2) , retype(3) , retype(9) , retype(-1));
+    // printf("%d %d\n", searchTable(parent, "func") , searchTable(child,
+    // "func")); insertvar("okabc" , 0 , (void *)&y , -1 , -1 , child);
+    // printf("%d %d\n", isDeclared("func", child), isDeclared("okabc",
+    // parent)); char c = 'a'; insertvar("c" , type("char"), (void *)&c , -1 ,
+    // -1 , child); printf("%d %d\n", typevar(child, "c") , typevar(parent,
+    // "c")); printf("%s %s %s %s %s %s\n", retype(0), retype(1) , retype(2) ,
+    // retype(3) , retype(9) , retype(-1));
 
     // insertfunc("solve", 0, parent , 3 , 0 , 0 , 1);
     // printf("%d\n", isDeclared("solve" , parent));
@@ -60,7 +60,7 @@ int main() {
     }
 
     {
-        //stmts
+        // stmts
     }
     float a = 1.0;
     // addNode(a, d);

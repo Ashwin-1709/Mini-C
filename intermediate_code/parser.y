@@ -54,7 +54,7 @@ char globalFor[200];
 %type <node> arg_list arg case_list_def case_list default_stmt case
 %type <node> else_clause for_loop_assignment for_loop_declaration
 %type <node> init_declarator init_declarator_list declarator_arr
-%type <node> declarator_var print_params
+%type <node> declarator_var print_params print_obj
 
 
 %right EQUAL_SIGN
@@ -468,7 +468,6 @@ expression_statement : expression_statement OR_OP expression_statement {
         sprintf(buf, "\tt%d = %s\n", temp_var, arr_index);
         strcat(globalFor, buf);
     }
-    astNode* equalto = createNodeByLabel(".=");
     $$ = passNode(".expression_stmt", 1, $1);
     $$->tIdx = temp_var++;
 }
@@ -782,22 +781,44 @@ print_statement : PRINTF_TOKEN LEFT_ROUND STRING_LITERAL RIGHT_ROUND SEMICOLON{
     $$ = passNode(".print_stmt", 7, printf_tk, left_round, string_lit, comma, $5, right_round, semicolon);
 }
 ;
-print_params : IDENTIFIER {
-    print_num++;
-    printf("\tpush %s\n", $1);
-    astNode* identifier = createNodeByLabel(".id");
-    astNode* actual_id = createNodeByLabel($1);
-    addNode(identifier, actual_id);
-    $$ = passNode(".print_params", 1, identifier);
+print_params : print_obj {
+    $$ = passNode(".print_params", 1, $1);
 }
-| IDENTIFIER COMMA print_params {
+| print_obj COMMA print_params {
+    astNode* comma = createNodeByLabel("., ");
+    $$ = passNode(".print_params", 3, $1, comma, $3);
+}
+print_obj : IDENTIFIER {
     print_num++;
     printf("\tpush %s\n", $1);
     astNode* identifier = createNodeByLabel(".id");
     astNode* actual_id = createNodeByLabel($1);
     addNode(identifier, actual_id);
-    astNode* comma = createNodeByLabel("., ");
-    $$ = passNode(".print_params", 3, identifier, comma, $3);
+    $$ = passNode("print_obj", 1 , identifier);
+}
+| I_CONSTANT {
+    print_num++;
+    printf("\tpush %d\n", $1);
+    astNode* iconst = createNodeByLabel(".I_CONST");
+    astNode* val = createNodeByIntVal($1);
+    addNode(iconst, val);
+    $$ = passNode("print_obj", 1 , iconst);
+}
+| F_CONSTANT {
+    print_num++;
+    printf("\tpush %f\n", $1);
+    astNode* fconst = createNodeByLabel(".F_CONST");
+    astNode* val = createNodeByVal($1);
+    addNode(fconst, val);
+    $$ = passNode("print_obj", 1 , fconst);
+}
+| CHAR_CONST {
+    print_num++;
+    printf("\tpush %s\n", $1);
+    astNode* char_const = createNodeByLabel(".CHAR_CONST");
+    astNode* val = createNodeByLabel($1);
+    addNode(char_const, val);
+    $$ = passNode("print_obj", 1 , char_const);
 }
 ;
 %%
