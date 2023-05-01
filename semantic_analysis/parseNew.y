@@ -61,7 +61,7 @@
 %type <node> compound_statement statement_list single_statement switch_statment for_statement if_statement while_statement declaration jump_statement print_statement expr return_statement 
 %type <node> expression_statement unary_expr functional_call arr_element assignment_statement
 %type <node> arg_list arg case_list_def case_list default_stmt case
-%type <node> else_clause for_loop_assignment for_loop_declaration 
+%type <node> else_clause for_loop_assignment for_loop_declaration print_obj
 %type <node> init_declarator init_declarator_list declarator_arr declarator_var print_params
 
 
@@ -404,7 +404,7 @@ for_statement : FOR LEFT_ROUND for_loop_declaration expr for_loop_assignment RIG
                         astNode* for_st = createNodeByLabel("for");
                         astNode* left_round = createNodeByLabel("(");
                         astNode* right_round = createNodeByLabel(")");
-                        $$ = passNode("for_stmt", 7, for_st, left_round, $3, $4, $5, right_round, $7);
+                        $$ = passNode(".for_stmt", 7, for_st, left_round, $3, $4, $5, right_round, $7);
                     }
 ;
 
@@ -492,24 +492,46 @@ print_statement : PRINTF_TOKEN LEFT_ROUND STRING_LITERAL RIGHT_ROUND SEMICOLON{
                         $$ = passNode(".print_stmt", 7, printf_tk, left_round, string_lit, comma, $5, right_round, semicolon);
                  }
 ;
-print_params : IDENTIFIER {
-                astNode* identifier = createNodeByLabel(".id");
-                astNode* actual_id = createNodeByLabel($1);
-                addNode(identifier, actual_id);
-                $$ = passNode(".print_params", 1, identifier);
+print_params : print_obj {
+                $$ = passNode(".print_params", 1, $1);
             } 
-            | IDENTIFIER COMMA print_params {
-                astNode* identifier = createNodeByLabel(".id");
-                astNode* actual_id = createNodeByLabel($1);
-                addNode(identifier, actual_id);
+            | print_obj COMMA print_params {
                 astNode* comma = createNodeByLabel(",");
-                $$ = passNode(".print_params", 3, identifier, comma, $3);
+                $$ = passNode(".print_params", 3, $1, comma, $3);
             }
+;
+
+print_obj : IDENTIFIER {
+                        astNode* identifier = createNodeByLabel(".id");
+                        astNode* actual_id = createNodeByLabel($1);
+                        addNode(identifier, actual_id);
+                        $$ = passNode("print_obj", 1 , identifier);
+            }
+           | I_CONSTANT {
+                        astNode* iconst = createNodeByLabel(".I_CONST");
+                        astNode* val = createNodeByIntVal($1);
+                        addNode(iconst, val);
+                        $$ = passNode("print_obj", 1 , iconst);
+           }
+           | F_CONSTANT {
+                        astNode* fconst = createNodeByLabel(".F_CONST");
+                        astNode* val = createNodeByVal($1);
+                        addNode(fconst, val);
+                        $$ = passNode("print_obj", 1 , fconst);
+           }
+           | CHAR_CONST {
+                        astNode* char_const = createNodeByLabel(".CHAR_CONST");
+                        astNode* val = createNodeByLabel($1);
+                        addNode(char_const, val);
+                        $$ = passNode("print_obj", 1 , char_const);
+           }
 ;
 %%
 void init_table(astNode* root, table* cur_scope);
 void process_expression(astNode* root , table* cur);
 Type expressionTypeCheck(astNode* root, table* scope);
+void process_parameter_list(astNode* root, table* cur);
+void process_function(astNode* root, table* cur);
 
 void process_parameter_list(astNode* root, table* cur) {
     if(strcmp(root->label, ".declare_var") == 0) {
@@ -672,7 +694,7 @@ void init_table(astNode* root, table* cur_scope) {
         return;
     }
 
-    if(strcmp(root->label, "for_stmt") == 0) {
+    if(strcmp(root->label, ".for_stmt") == 0) {
         /* printf("for_stmt\n"); */
         /* printTable(cur_scope); */
         table* child = changeScope(cur_scope);
@@ -1005,8 +1027,9 @@ int main() {
     globalfuncs = createTable();
     yyparse();
     astNode* root = pop();
+    /* printAST(root); */
     /* printf("\n\n---------Initiating Semantic Analysis---------\n\n"); */
-    init_table(root, cur_table);
+    /* init_table(root, cur_table); */
     /* printf("\n\n---------Semantic Analysis done---------\n---------Program is semantically correct---------\n\n");
     printf("\n\n---------Symbol Table---------\n\n");
     printTable(cur_table);
@@ -1016,8 +1039,9 @@ int main() {
     /* printTable(cur_table); */
     /* TypeCheck(root, cur_table); */
     /* resetTables(cur_table); */
-    /* printTree(root); */
-    /* printf("\n\n----Type check done-----\n\n"); */
+    printTree(root);
+    /* simulateProgram(root, cur_table); */
+    /* printf("\n\n----simulation done-----\n\n"); */
 }
 
 int yyerror() {

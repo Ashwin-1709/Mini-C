@@ -1,4 +1,6 @@
 #include "simulate.h"
+#include "assert.h"
+
 
 bool isExpression(astNode *root){
     if(strcmp(root->label, ".expression_stmt") == 0)
@@ -127,10 +129,12 @@ node* simulateArrElement(astNode* root, table* scope){
 }
 
 node* simulateAssignment(astNode* root, table* scope){
+    // printf("here : %s\n", root -> child[2] -> label);
     node* right = simulateExpression(root -> child[2], scope);
     node* result = (node *)(malloc(sizeof(node)));
     result -> type = TY_INT;
     result -> val.ival = 1;
+    // printf("ival = %d\n", result ->val.ival);
     if(isVar(root -> child[0])){
         setVar(root -> child[0] -> child[0] -> label, scope, right);
     }
@@ -140,6 +144,7 @@ node* simulateAssignment(astNode* root, table* scope){
             idx2 = atoi(root -> child[0] -> child[5] -> child[0] -> label);
         setArrayValue(root -> child[0] -> child[0] -> child[0] -> label, scope, idx1, idx2, right);
     }
+    // printf("%d\n", right -> val.ival);
     return result;
 }
 
@@ -174,7 +179,18 @@ void getPrintParams(astNode* root, node** arr, int* itr, table* scope){
 void simulatePrinting(astNode* root, table* scope){
     char* str = root -> child[2] -> child[0] -> label;
     if (root -> childCnt == 5){
-        printf("%s", str);
+        for(int i = 1; i < strlen(str) - 1; i++){
+            if (str[i] == '\\' && i < strlen(str) - 1){
+                if (str[i + 1] == 'n'){
+                    printf("\n");
+                    i = i + 1;
+                }
+            }
+            else{
+                printf("%c", str[i]);
+            }
+        }
+        return;
     }
     node** arr = (node**)(malloc(sizeof(node*) * 50));
     int itr = 0;
@@ -369,8 +385,8 @@ node* simulateExpression(astNode* root, table* scope) {
             curVal -> type = TY_INT;
             return curVal;
         }
-        return simulateExpression(root -> child[1], scope);
     }
+    return simulateExpression(root -> child[1], scope);
 }
 
 node* simulateIdentifier(astNode* root, table* scope) {
@@ -390,10 +406,16 @@ void setVar(char *id, table* scope, node* aval) {
     float fval = aval->val.fval;
     char cval = aval->val.cval;
     entry* entry = getEntry(scope, id);
-    if(entry->type == TY_INT) 
-        entry->val.ival = ival;
-    else if(entry->type == TY_FLOAT)
-        entry->val.fval = fval;
+    if(entry->type == TY_INT) {
+        if(aval -> type == TY_INT)
+            entry->val.ival = ival;
+        else entry->val.ival = fval;
+    }
+    else if(entry->type == TY_FLOAT) {
+        if(aval -> type == TY_FLOAT)
+            entry->val.fval = fval;
+        else entry->val.fval = ival;
+    }
     else entry->val.cval = cval;
 }
 
@@ -469,15 +491,29 @@ void simulateWhile(astNode* root, table* scope) {
         flg = exprNode->val.ival;
     else if(exprNode->type == TY_FLOAT)
         flg = exprNode->val.fval;
-    while(flg) {
-        simulateStatement(root->child[4], scope);
-        node *exprNode = simulateExpression(root -> child[2], scope);
-        if(exprNode->type == TY_INT)
-            flg = exprNode->val.ival;
-        else if(exprNode->type == TY_FLOAT)
-            flg = exprNode->val.fval;
-    }
-    
+
+    if(isCompound(root->child[4]->child[0])) {
+        table *child = nextScope(scope);
+        while(flg) {
+            if(root->child[4]->child[0]->childCnt > 2)
+                simulateStatementList(root->child[4]->child[0]->child[1], child);
+                node *exprNode = simulateExpression(root -> child[2], child);
+                if(exprNode->type == TY_INT)
+                    flg = exprNode->val.ival;
+                else if(exprNode->type == TY_FLOAT)
+                    flg = exprNode->val.fval;
+            resetTables(child);
+        }
+    } else {
+        while(flg) {
+            simulateStatement(root->child[4], scope);
+            node *exprNode = simulateExpression(root -> child[2], scope);
+            if(exprNode->type == TY_INT)
+                flg = exprNode->val.ival;
+            else if(exprNode->type == TY_FLOAT)
+                flg = exprNode->val.fval;
+        }
+    }    
 }
 
 void simulateStatementList(astNode* root, table* scope) {
@@ -488,14 +524,18 @@ void simulateStatementList(astNode* root, table* scope) {
 
 void simulateStatement(astNode* root, table* scope) {
     astNode* stmt = root->child[0];
-    if(isExpr(stmt)) 
+    if(isExpression(stmt)) 
         simulateExpression(stmt, scope);
+    else if(isExpr(stmt))
+        simulateExpr(stmt, scope);
     else if(isPrintf(stmt))
         simulatePrinting(stmt, scope);
     else if(isAssignment(stmt))
         simulateAssignment(stmt, scope);
-    else if(isFor(stmt))
-        simulateForStatement(stmt, scope);
+    else if(isFor(stmt)) {
+        table* child = nextScope(scope);
+        simulateForStatement(stmt, child);
+    }
     else if(isCompound(stmt))
         simulateCompoundStatement(stmt, scope);
     else if(isDeclaration(stmt))
@@ -508,8 +548,10 @@ void simulateStatement(astNode* root, table* scope) {
 }
 
 void simulateCompoundStatement(astNode* root, table* scope) {
+    // printf("%s\n", root->label);
     if(root->childCnt > 2) {
         table* child = nextScope(scope);
+        // assert(child != NULL);
         simulateStatementList(root ->child[1] , child);
     }
 }
@@ -522,15 +564,14 @@ void simulateIf(astNode* root, table* scope) {
     else if(exprNode->type == TY_FLOAT)
         flg = exprNode->val.fval;
     if(flg) simulateStatement(root -> child[4], scope);
-    else simulateStatement(root -> child[5] -> child[1], scope);
+    else if(root->childCnt > 6)simulateStatement(root -> child[6] -> child[1], scope);
 }
 
 node* simulateExpr(astNode* root, table* scope) {
     int childCnt = root -> childCnt;
     node *result = (node *)(malloc(sizeof(node)));
-    if (childCnt == 0) return result;
-    else if (childCnt == 1) return simulateExpression(root -> child[0], scope);
-    else {
+    if(childCnt == 2) return simulateExpression(root -> child[0], scope);
+    else if(childCnt == 4){
         node* expr1 = simulateExpr(root -> child[0], scope);
         node* expr2 = simulateExpr(root -> child[2], scope);
         bool flg1 = (expr1 -> type == TY_INT) ? expr1 -> val.ival : expr1 -> val.fval;
@@ -542,39 +583,103 @@ node* simulateExpr(astNode* root, table* scope) {
     return result;
 }
 
-void simulateForStatement(astNode* root, table* scope) {
-    simulateForDeclaration(root -> child[2], scope);
-    while (1) {
-        node* expr = simulateExpr(root -> child[3], scope);
-        if (expr -> type == TY_INT && expr -> val.ival) { 
-            simulateStatement(root -> child[6], scope);
-            simulateForAssignment(root -> child[4], scope);
-        }
-        else if (expr -> type == TY_FLOAT && expr -> val.fval != 0) {
-            simulateStatement(root -> child[6], scope);
-            simulateForAssignment(root -> child[4], scope);
-        }
-        else break;
+// void simulateForStatement(astNode* root, table* scope) {
+//     table* child = nextScope(scope);
+//     printf("%d\n", child -> childCnt);
+//     simulateForDeclaration(root -> child[2], child);
+//     table* grandchild = nextScope(child);
+//     while (1) {
+//         node* expr = simulateExpr(root -> child[3], child);
+//         if (expr -> type == TY_INT && expr -> val.ival) { 
+//             simulateStatement(root -> child[6], grandchild);
+//             simulateForAssignment(root -> child[4], grandchild);
+//         }
+//         else if (expr -> type == TY_FLOAT && expr -> val.fval != 0) {
+//             simulateStatement(root -> child[6], grandchild);
+//             simulateForAssignment(root -> child[4], grandchild);
+//         }
+//         else{
+//             resetTables(grandchild);
+//             break;
+//         }
+//         resetTables(grandchild);
+//     }
+//     resetTables(child);
+// }
+
+// void simulateForDeclaration(astNode* root, table* scope) {
+//     int declType = root -> childCnt;
+//     if (declType == 1) {
+//         char* str = root -> child[0] ->label;
+//         if (strcmp(str, ";") != 0) findInitDec (root -> child[0], scope);
+//     }
+//     else simulateForAssignment(root -> child[0], scope);
+// }
+
+// void simulateForAssignment(astNode* root, table* scope) {
+//     int childCnt = root -> childCnt;
+//     if (childCnt > 0) {
+//         node* assignment = simulateAssignment(root -> child[0], scope);
+//         if (childCnt > 1) {
+//             simulateForAssignment(root -> child[2], scope);
+//         }
+//     }
+// }
+
+void simulateForAssignment(astNode* root, table* scope) {
+    if(root -> childCnt == 1) 
+        simulateAssignment(root -> child[0], scope);
+    else if(root -> childCnt > 1) {
+        simulateAssignment(root -> child[0], scope);
+        simulateForAssignment(root -> child[2], scope);
     }
 }
 
 void simulateForDeclaration(astNode* root, table* scope) {
-    int declType = root -> childCnt;
-    if (declType == 1) {
-        char* str = root -> child[0] ->label;
-        if (strcmp(str, ";") != 0) findInitDec (root -> child[0], scope);
-    }
-    else simulateForAssignment(root -> child[0], scope);
+    if(isDeclaration(root->child[0])) {
+        findInitDec(root -> child[0], scope);
+        return;
+    } else if(strcmp(root -> child[0] -> label, ".for_assign") == 0) 
+        simulateForAssignment(root -> child[0], scope);
 }
 
-void simulateForAssignment(astNode* root, table* scope) {
-    int childCnt = root -> childCnt;
-    if (childCnt > 0) {
-        node* assignment = simulateAssignment(root -> child[0], scope);
-        if (childCnt > 1) {
-            simulateForAssignment(root -> child[2], scope);
+void simulateForStatement(astNode* root, table* scope){
+    simulateForDeclaration(root->child[2], scope);
+    node *exprNode = simulateExpr(root -> child[3], scope);
+    bool flg = false;
+    if(exprNode->type == TY_INT)
+        flg = exprNode->val.ival;
+    else if(exprNode->type == TY_FLOAT)
+        flg = exprNode->val.fval;
+
+    astNode* stmt = root -> child[6];
+    if(isCompound(stmt -> child[0])) {
+        table *child = nextScope(scope);
+        while(flg) {
+            if(stmt -> child[0] -> childCnt > 2)
+                simulateStatementList(stmt -> child[0] -> child[1], child);
+                simulateForAssignment(root -> child[4], scope);
+                node *exprNode = simulateExpr(root -> child[3], scope);
+                if(exprNode->type == TY_INT)
+                    flg = exprNode->val.ival;
+                else if(exprNode->type == TY_FLOAT)
+                    flg = exprNode->val.fval;
+            resetTables(child);
+            resetTables(scope);
         }
-    }
+    } else {
+        while(flg) {
+            if(stmt -> child[0] -> childCnt > 2)
+                simulateStatementList(stmt -> child[0] -> child[1], scope);
+                simulateForAssignment(root -> child[4], scope);
+                node *exprNode = simulateExpr(root -> child[3], scope);
+                if(exprNode->type == TY_INT)
+                    flg = exprNode->val.ival;
+                else if(exprNode->type == TY_FLOAT)
+                    flg = exprNode->val.fval;
+            resetTables(scope);
+        }
+    } 
 }
 
 void simulateMain(astNode* root, table* scope) {

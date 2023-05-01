@@ -190,11 +190,12 @@ void insertfunc(char *id, Type type, table *curtable, int *args, bool hasargs, a
 }
 
 table* nextScope(table* cur) {
-    for(int i = 0 ; i < cur->childCnt ; i++)
+    for(int i = 0 ; i < cur->childCnt ; i++) {
         if(!cur->visited[i]) {
             cur->visited[i] = true;
             return cur->childTables[i];
         }
+    }
     assert("Cannot change scope");
     return NULL;
 }

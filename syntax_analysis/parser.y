@@ -19,7 +19,7 @@
 %type  expression_statement unary_expr functional_call arr_element assignment_statement
 %type  arg_list arg case_list_def case_list default_stmt case
 %type  else_clause for_loop_assignment for_loop_declaration 
-%type  init_declarator init_declarator_list declarator_arr declarator_var print_params
+%type  init_declarator init_declarator_list declarator_arr declarator_var print_params print_obj
 
 
 %right EQUAL_SIGN
@@ -201,8 +201,11 @@ while_statement : WHILE LEFT_ROUND expression_statement RIGHT_ROUND single_state
 /* Printf and scanf */
 print_statement : PRINTF_TOKEN LEFT_ROUND STRING_LITERAL RIGHT_ROUND SEMICOLON
                  | PRINTF_TOKEN LEFT_ROUND STRING_LITERAL COMMA print_params RIGHT_ROUND SEMICOLON
-print_params : IDENTIFIER 
-            | IDENTIFIER COMMA print_params 
+;
+print_params : print_obj 
+            | print_obj COMMA print_params 
+;
+print_obj : IDENTIFIER | I_CONSTANT | F_CONSTANT | STRING_LITERAL | CHAR_CONST
 ;
 %%
 
