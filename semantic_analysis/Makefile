@@ -9,6 +9,6 @@ main: lex.yy.c y.tab.c ast.h ast.c symboltable.h symboltable.c
 lexer: lexer.l
 	flex lexer.l
 parser: parser.y
-	yacc -d parser.y
+	yacc -d parseNew.y
 clean:
 	lex.yy.c y.tab.c y.tab.h

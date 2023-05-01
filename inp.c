@@ -1,11 +1,5 @@
 
-void func(int a , int b) {
-    return;
-}
-
-main() {
-    // int a = 5;
-    int a[10];
-    int b[10];
-    a[5] = b[3] * 2;
+int main() {
+    float a = 3.5 / 3  * 3;
+    printf("%f\n", a);
 }

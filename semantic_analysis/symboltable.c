@@ -154,7 +154,10 @@ void insertfunc(char *id, Type type, table *curtable, int *args, bool hasargs, a
     }
     else cur->x_lim = -1;
     cur->y_lim = -1;
-    if (hasargs)
+    cur->parameters = (int *)malloc(sizeof(int) * 50);
+    for(int i = 0 ; i < 50 ; i++)
+        cur->parameters[i] = 100;
+    if(hasargs) 
         cur->parameters = args;
     cur->node = fnode;
     insert(cur, curtable);

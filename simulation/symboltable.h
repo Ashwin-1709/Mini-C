@@ -9,6 +9,12 @@
 #include <string.h>
 #include <strings.h>
 
+typedef union value {
+    int ival;
+    float fval;
+    char cval;
+} value;
+
 int vtoi(void *p);
 
 char vtoc(void *p);
@@ -24,6 +30,7 @@ char *vtoca(void *p);
 typedef struct entry {
     char *id;    // identifier
     void *value; // value
+    value val;
     int x_lim;   // if array then array len, if func number of parameters
     int y_lim;   // if 2D array then col lim
     Type type;   // type of var

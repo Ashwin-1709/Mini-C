@@ -793,10 +793,15 @@ void argListTypeCheck(astNode* root, table* scope) {
             break;
         argc++;
     }  
-     if(argc == 0 && funcEntry->parameters != NULL)
+    int expectedArgc = 0;
+    for(int i = 0 ; i < 50 ; i++) {
+        if(funcEntry->parameters[i] == 100)
+            break;
+        expectedArgc++;
+    }
+
+    if(expectedArgc != argc)
         err("Error : incompatible functional parameters\n");
-     if(argc > 0 && funcEntry->parameters == NULL)
-        err("Error : incompatible functional parameters\n"); 
      for(int i = 0 ; i < 50 ; i++) {
         if(arg[i] != funcEntry->parameters[i] || (arg[i] == 100 && funcEntry->parameters[i] != 100)) { 
             if((arg[i] == TY_INT || arg[i] == TY_FLOAT) && (funcEntry->parameters[i] == TY_INT || funcEntry->parameters[i] == TY_FLOAT))
@@ -832,10 +837,10 @@ Type expressionTypeCheck(astNode* root, table* scope){
             if(rightType == TY_ACO || rightType == TY_ACT || rightType == TY_AIO || rightType == TY_AIT
                 || rightType == TY_AFO || rightType == TY_AFT)
                 err("Error : Arrays cannot be used in assignment expressions\n");
-            /* printf("right = %d %s\n", rightType, root -> child[0] -> child[2] -> label); */
+            /* printf("right = %d %s\n", rightType, root -> child[0] -> child[0] -> label); */
             if (strcmp(root -> child[0] -> child[0] -> label, ".id") == 0){
                 Type leftType = typevar(scope, root -> child[0] -> child[0] -> child[0] -> label);
-                /* printf("left = %d\n", leftType); */
+                printf("left = %d\n", leftType);
                 if((leftType == TY_INT || leftType == TY_FLOAT) && (rightType == TY_INT || rightType == TY_FLOAT))
                     return leftType;
                 if (leftType != rightType)

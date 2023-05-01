@@ -1,6 +1,7 @@
 %{
     #include "ast.h"
     #include "symboltable.h"
+    #include "simulate.h"
 
     void declerr(char *id) {
         printf("Error : \"%s\" redeclared\n", id);
@@ -510,6 +511,8 @@ print_params : IDENTIFIER {
 void init_table(astNode* root, table* cur_scope);
 void process_expression(astNode* root , table* cur);
 Type expressionTypeCheck(astNode* root, table* scope);
+void process_parameter_list(astNode* root, table* cur);
+void process_function(astNode* root, table* cur);
 
 void process_parameter_list(astNode* root, table* cur) {
     if(strcmp(root->label, ".declare_var") == 0) {
@@ -626,6 +629,13 @@ void process_declaration(astNode* root, table* cur) {
 
 void init_table(astNode* root, table* cur_scope) {
     /* printf("label = %s\n", root->label); */
+
+    if(strcmp(root -> label, ".func_declaration") == 0)
+        funcTypeGlobal = root->child[0]->type;
+    
+    if(strcmp(root -> label, ".main_func") == 0)
+        funcTypeGlobal = TY_INT;
+
     if(strcmp(root->label, ".func_declaration") == 0) {
         /* printf("func_dec\n"); */
         table* child = changeScope(cur_scope);
@@ -643,6 +653,7 @@ void init_table(astNode* root, table* cur_scope) {
     if(strcmp(root->label, ".declaration") == 0) {
         /* printf("dec\n"); */
         process_declaration(root,  cur_scope);
+        declarationTypeCheck(root, cur_scope);
         return;
     }
 
@@ -653,12 +664,14 @@ void init_table(astNode* root, table* cur_scope) {
         if(!isDeclared(var_id, cur_scope))
             undecerr(var_id);
         process_expression(root->child[2], cur_scope);
+        expressionTypeCheck(root->child[2], cur_scope);
         return;
     }
 
     if(strcmp(root->label, ".expression_stmt") == 0) {
         /* printf("expr\n"); */
         process_expression(root, cur_scope);
+        expressionTypeCheck(root, cur_scope);
         return;
     }
 
@@ -668,6 +681,11 @@ void init_table(astNode* root, table* cur_scope) {
         table* child = changeScope(cur_scope);
         for(int i = 0 ; i < root->childCnt ; i++)
             init_table(root->child[i], child);
+        return;
+    }
+
+    if(strcmp(root -> label, ".return_stmt") == 0) {
+        returnTypeCheck(root, cur_scope);
         return;
     }
 
@@ -778,9 +796,14 @@ void argListTypeCheck(astNode* root, table* scope) {
             break;
         argc++;
     }  
-     if(argc > 0 && funcEntry->parameters == NULL)
-        err("Error : incompatible functional parameters\n"); 
-     if(argc == 0 && funcEntry->parameters != NULL)
+    int expectedArgc = 0;
+    for(int i = 0 ; i < 50 ; i++) {
+        if(funcEntry->parameters[i] == 100)
+            break;
+        expectedArgc++;
+    }
+
+    if(expectedArgc != argc)
         err("Error : incompatible functional parameters\n");
      for(int i = 0 ; i < 50 ; i++) {
         if(arg[i] != funcEntry->parameters[i] || (arg[i] == 100 && funcEntry->parameters[i] != 100)) { 
@@ -813,11 +836,14 @@ Type expressionTypeCheck(astNode* root, table* scope){
                 return unaryType;
             return TY_INT;
         } else if(strcmp(root -> child[0] -> label, ".assign_stmt") == 0){
-            /* printf("id = %s type = %d %d\n", root->label, root->type, root->childCnt); */
             Type rightType = expressionTypeCheck(root -> child[0] -> child[2], scope);
-            /* printf("right = %d %s\n", rightType, root -> child[0] -> child[2] -> label); */
+            if(rightType == TY_ACO || rightType == TY_ACT || rightType == TY_AIO || rightType == TY_AIT
+                || rightType == TY_AFO || rightType == TY_AFT)
+                err("Error : Arrays cannot be used in assignment expressions\n");
+            /* printf("right = %d %s\n", rightType, root -> child[0] -> child[0] -> label); */
             if (strcmp(root -> child[0] -> child[0] -> label, ".id") == 0){
                 Type leftType = typevar(scope, root -> child[0] -> child[0] -> child[0] -> label);
+                printf("left = %d\n", leftType);
                 if((leftType == TY_INT || leftType == TY_FLOAT) && (rightType == TY_INT || rightType == TY_FLOAT))
                     return leftType;
                 if (leftType != rightType)
@@ -828,12 +854,12 @@ Type expressionTypeCheck(astNode* root, table* scope){
             CheckArray(root -> child[0] ->child[0], scope);
             Type leftType = typevar(scope, root -> child[0] -> child[0] -> child [0] -> child[0] -> label);
             if (leftType == TY_AIO || leftType == TY_AIT){
-                if (rightType != TY_INT)
+                if (rightType != TY_INT && rightType != TY_FLOAT)
                     err("Error : Incompatible type left side and right side of assignment, Expected int or float\n");
                 return TY_INT;
             }
             if (leftType == TY_AFO || leftType == TY_AFT){
-                if (rightType != TY_FLOAT)
+                if (rightType != TY_INT && rightType != TY_FLOAT)
                     err("Error : Incompatible type left side and right side of assignment, Expected int or float\n");
                 return TY_FLOAT;
             }
@@ -842,7 +868,7 @@ Type expressionTypeCheck(astNode* root, table* scope){
                     err("Error : Incompatible type left side and right side of assignment, Expected char\n");
                 return TY_CHAR;
             }
-        } else if(strcmp(root -> child[0] -> label, ".functional_call") == 0){ 
+        } else if(strcmp(root -> child[0] -> label, ".functional_call") == 0){
             argListTypeCheck(root -> child[0], scope);
             return typevar(globalfuncs, root -> child[0] -> child[0] -> child[0] -> label);
         } else if(strcmp(root -> child[0] -> label, ".arr_element") == 0){
@@ -901,6 +927,7 @@ void init_dec_type(astNode* root, table* scope, Type type) {
 
 void declarationTypeCheck(astNode* root, table* scope) {
     Type type = root->child[0]->type;
+    /* printf("Type to check = %d\n", type); */
     init_dec_type(root, scope, type);
 }
 
@@ -981,7 +1008,6 @@ int main() {
     globalfuncs = createTable();
     yyparse();
     astNode* root = pop();
-    /* printTree(root); */
     /* printf("\n\n---------Initiating Semantic Analysis---------\n\n"); */
     init_table(root, cur_table);
     /* printf("\n\n---------Semantic Analysis done---------\n---------Program is semantically correct---------\n\n");
@@ -990,8 +1016,12 @@ int main() {
     printf("\n\n---------Global Function Table---------\n\n");
     printTable(globalfuncs); */
     /* printf("\n\n----Initiating type check-----\n\n"); */
-    TypeCheck(root, cur_table);
+    /* printTable(cur_table); */
+    /* TypeCheck(root, cur_table); */
     resetTables(cur_table);
+    /* printTree(root); */
+    simulateProgram(root, cur_table);
+    printf("\n\n----simulation done-----\n\n");
 }
 
 int yyerror() {
