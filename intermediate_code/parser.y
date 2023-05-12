@@ -657,6 +657,7 @@ for_loop_assignment : assignment_statement { $$ = passNode(".for_assign", 1, $1)
 ;
 for_loop_declaration : declaration { $$ = passNode(".for_declare", 1, $1); }
 | SEMICOLON { astNode* semicolon = createNodeByLabel(".;"); $$ = passNode(".for_declare", 1, semicolon); }
+| for_loop_assignment SEMICOLON {astNode* semicolon = createNodeByLabel(";"); $$ = passNode(".for_declare", 2 , $1, semicolon);}
 ;
 for_statement : FOR LEFT_ROUND for_loop_declaration {
     printf("FL%d:\n", forIdx);
