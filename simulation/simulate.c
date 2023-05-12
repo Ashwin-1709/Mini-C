@@ -129,12 +129,10 @@ node* simulateArrElement(astNode* root, table* scope){
 }
 
 node* simulateAssignment(astNode* root, table* scope){
-    // printf("here : %s\n", root -> child[2] -> label);
     node* right = simulateExpression(root -> child[2], scope);
     node* result = (node *)(malloc(sizeof(node)));
     result -> type = TY_INT;
     result -> val.ival = 1;
-    // printf("ival = %d\n", result ->val.ival);
     if(isVar(root -> child[0])){
         setVar(root -> child[0] -> child[0] -> label, scope, right);
     }
@@ -144,7 +142,6 @@ node* simulateAssignment(astNode* root, table* scope){
             idx2 = atoi(root -> child[0] -> child[5] -> child[0] -> label);
         setArrayValue(root -> child[0] -> child[0] -> child[0] -> label, scope, idx1, idx2, right);
     }
-    // printf("%d\n", right -> val.ival);
     return result;
 }
 
@@ -277,9 +274,6 @@ void simulatePrinting(astNode* root, table* scope){
     }
 }
 
-// node* simulateFunction(astNode* root, table* scope){
-// }
-
 node* simulateExpression(astNode* root, table* scope) {
     node* curVal = (node *)(malloc(sizeof(node)));
     if(root -> childCnt == 1) {
@@ -309,10 +303,7 @@ node* simulateExpression(astNode* root, table* scope) {
         }
         if(isArr(root -> child[0])){
             return simulateArrElement(root -> child[0], scope);
-        }
-        // if(isFunction(root -> child[0])){
-        //     return simulateFunction(root -> child[0], scope);
-        // }       
+        }    
     }
 
     if (isExpression(root -> child[0])){
@@ -589,10 +580,8 @@ void simulateStatement(astNode* root, table* scope) {
 }
 
 void simulateCompoundStatement(astNode* root, table* scope) {
-    // printf("%s\n", root->label);
     if(root->childCnt > 2) {
         table* child = nextScope(scope);
-        // assert(child != NULL);
         simulateStatementList(root ->child[1] , child);
     }
 }
