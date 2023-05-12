@@ -103,7 +103,6 @@ WHITESPACE      [ \t\v\n\f]
 .               			{ error("Error in lexical Analysis\n"); }
 %%
 int main(){
-    yyin=fopen("/Users/mokshpapneja/Desktop/CC/Assignment2/Compiler-Construction-Assignment-2/lexical_analysis/test.c","r+");
     yylex();
 }
 int yywrap(void) {       /* called at end of input */ 
