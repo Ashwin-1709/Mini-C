@@ -538,7 +538,6 @@ void process_parameter_list(astNode* root, table* cur) {
     if(strcmp(root->label, ".declare_var") == 0) {
         int type = root->child[0]->type;
         char *var_id = strdup(root->child[1]->child[0]->label);
-        /* printf("param %d %s added\n", type,  var_id); */
         insertvar(var_id, type, NULL, -1, -1, cur);
         return;
     }
@@ -547,50 +546,40 @@ void process_parameter_list(astNode* root, table* cur) {
 }
 
 void process_function(astNode* root, table* cur) {
-    // root is functional declaration
-    /* printf("-----entered-----\n"); */
-    /* printf("%s\n", root->label); */
     astNode* func_type = root->child[0];
-    /* printf("%s\n", func_type->label); */
     if(strcmp(func_type->label, ".var_type") == 0)
         func_type = func_type->child[0];
     Type type = func_type->type;
 
     astNode* func_decl = root->child[1]->child[0]->child[0];
     char *func_id = strdup(func_decl->label);
-    /* printf("func_id = %s\n", func_id); */
-    /* printf("hello123\n"); */
     astNode* param_list = root->child[1];
-    /* printf("hello\n"); */
-    /* printf("p = %s %d\n", param_list->label, param_list->childCnt); */
+    
     if(searchTable(globalfuncs, func_id))
         declerr(func_id);
+	
     if(param_list->childCnt == 4) {
         int *args = get_args(param_list->child[2]);
         insertfunc(func_id, type, cur, args , true , root);
         insertfunc(func_id, type, globalfuncs, args , true , root);
         process_parameter_list(param_list->child[2], cur);
-        /* printf("func = %s type = %d argc = %d\n", func_id , type , argc); */
     } else{
         insertfunc(func_id , type , cur , NULL , false, root);
         insertfunc(func_id , type , globalfuncs , NULL , false, root);                                               
     }
+    
     astNode* compound_stmt = root->child[2];
     if(compound_stmt->childCnt > 2) {
-        /* printf("leaving func = %s\n", compound_stmt->child[1]->label); */
         init_table(compound_stmt->child[1], cur);
     }
 }
 
 void init_dec_list(astNode* root, table* cur, int type) {
-    /* printf("in init_decl_list label = %s\n", root->label); */
     if(strcmp(root->label, ".init_dec") == 0) {
         char* var_id = strdup(root->child[0]->child[0]->child[0]->label);
-        /* printf("id added = %s\n", var_id); */
         if(searchTable(cur, var_id) || searchTable(globalfuncs, var_id))
             declerr(var_id);
         else {
-
             if (root->childCnt == 3){
                 process_expression(root->child[2], cur);
             }
@@ -614,12 +603,9 @@ void init_dec_list(astNode* root, table* cur, int type) {
             }
         }
 
-        /* printf("cur scope cnt = %d\n",  cur->entryCnt); */
         return;
     } 
 
-    /* if(strcmp(root->label, ".expression_stmt") == 0)
-        init_table(root, cur); */
     for(int i = 0 ; i < root->childCnt; i++)
         init_dec_list(root->child[i], cur, type);
 }
@@ -644,12 +630,9 @@ void process_printf(astNode* root, table* cur) {
 void process_declaration(astNode* root, table* cur) {
     Type type = root->child[0]->type;
     init_dec_list(root, cur, type);
-
 }
 
 void init_table(astNode* root, table* cur_scope) {
-    /* printf("label = %s\n", root->label); */
-
     if(strcmp(root -> label, ".func_declaration") == 0)
         funcTypeGlobal = root->child[0]->type;
     
@@ -657,30 +640,25 @@ void init_table(astNode* root, table* cur_scope) {
         funcTypeGlobal = TY_INT;
 
     if(strcmp(root->label, ".func_declaration") == 0) {
-        /* printf("func_dec\n"); */
         table* child = changeScope(cur_scope);
         process_function(root , child);
         return;
     }
 
     if(strcmp(root->label, ".compound_stmt") == 0 && root->childCnt > 2) {
-        /* printf("compound\n"); */
         table* child = changeScope(cur_scope);
         init_table(root->child[1], child);
         return;
     }
 
     if(strcmp(root->label, ".declaration") == 0) {
-        /* printf("dec\n"); */
         process_declaration(root,  cur_scope);
         declarationTypeCheck(root, cur_scope);
         return;
     }
 
     if(strcmp(root->label, ".assign_stmt") == 0) {
-        /* printf("assgn\n"); */
         char* var_id = root->child[0]->child[0]->label;
-        /* printf("checking for %s\n", var_id); */
         if(!isDeclared(var_id, cur_scope))
             undecerr(var_id);
         process_expression(root->child[2], cur_scope);
@@ -689,15 +667,12 @@ void init_table(astNode* root, table* cur_scope) {
     }
 
     if(strcmp(root->label, ".expression_stmt") == 0) {
-        /* printf("expr\n"); */
         process_expression(root, cur_scope);
         expressionTypeCheck(root, cur_scope);
         return;
     }
 
     if(strcmp(root->label, ".for_stmt") == 0) {
-        /* printf("for_stmt\n"); */
-        /* printTable(cur_scope); */
         table* child = changeScope(cur_scope);
         for(int i = 0 ; i < root->childCnt ; i++)
             init_table(root->child[i], child);
@@ -719,22 +694,7 @@ void init_table(astNode* root, table* cur_scope) {
         init_table(root->child[3], child);
         return;
     }
-
-    /* if(strcmp(root->label, ".for_declare") == 0)  {
-        table* child = changeScope(cur_scope);
-        init_table(root->child[0], child);
-    } else if(strcmp(root->label, ".compound_stmt") == 0 && root->childCnt > 2) {
-        table* child = changeScope(cur_scope);
-        init_table(root->child[1], child);
-        return;
-    }
-    else if(strcmp(root->label, ".declaration") == 0) {
-        process_declaration(root, cur_scope);
-        return;
-    } else if(strcmp(root->label, ".expression_stmt") == 0 || strcmp(root->label, ".assign_stmt") == 0) {
-        process_expression(root, cur_scope);
-        return;
-    } */
+    
     for(int i = 0 ; i < root->childCnt ; i++)
         init_table(root->child[i], cur_scope);
 }
@@ -753,7 +713,6 @@ void param_dfs(astNode *root, int *cur, int *args, table* scope) {
     if(root == NULL)
         return;
     if (strcmp(root->label, ".arg") == 0) {
-        /* printf("here\n"); */
         Type type = expressionTypeCheck(root -> child[0], scope);
         args[*cur] = type;
         *cur = *cur + 1;
@@ -786,10 +745,10 @@ void CheckArray(astNode* root, table* scope) {
     
     int id_1 = -1, id_2 = -1;
     id_1 = atoi(root -> child[2] -> child[0] -> label);
-    /* printf("id_1 : %d\n", id_1); */
+ 
     if(root-> childCnt > 4) 
         id_2 = atoi(root -> child[5] -> child[0] -> label);
-    /* printf("id_2 : %d\n", id_2); */
+   
     if(arrayEntry->y_lim == -1 && arrayEntry->x_lim == -1) {
         printf("Error : Var %s is not an array\n", root -> child[0] -> child[0] -> label);
         exit(0);
@@ -836,19 +795,15 @@ void argListTypeCheck(astNode* root, table* scope) {
 
 
 Type expressionTypeCheck(astNode* root, table* scope){
-    /* printf("id = %s type = %d child = %d\n", root->label, root->type, root->childCnt); */
     if(root->childCnt == 1 && strcmp(root->label, ".id") == 0)  {
-        /* printf("here id = %s\n", root->child[0]->label ); */
-        /* printf("%d\n", typevar(scope, root->child[0]->label)); */
         return typevar(scope, root->child[0]->label);
     }
+    
     if(root->childCnt == 0) {
-        /* printf("id = %s type = %d %d\n", root->label, root->type, root->childCnt); */
         return root->type;
     }
     else if(root->childCnt == 1) {
         if (strcmp(root -> child[0] -> label, ".unary") == 0){
-            /* printf("id = %s type = %d %d\n", root->label, root->type, root->childCnt); */
             Type unaryType = expressionTypeCheck(root-> child[0] -> child[1], scope);
             if(unaryType != TY_INT && unaryType != TY_FLOAT)
                 err("Error : Incompatible type for unary expression, expected int or float\n");
@@ -860,17 +815,17 @@ Type expressionTypeCheck(astNode* root, table* scope){
             if(rightType == TY_ACO || rightType == TY_ACT || rightType == TY_AIO || rightType == TY_AIT
                 || rightType == TY_AFO || rightType == TY_AFT)
                 err("Error : Arrays cannot be used in assignment expressions\n");
-            /* printf("right = %d %s\n", rightType, root -> child[0] -> child[0] -> label); */
+            
             if (strcmp(root -> child[0] -> child[0] -> label, ".id") == 0){
                 Type leftType = typevar(scope, root -> child[0] -> child[0] -> child[0] -> label);
-                /* printf("left = %d\n", leftType); */
+                
                 if((leftType == TY_INT || leftType == TY_FLOAT) && (rightType == TY_INT || rightType == TY_FLOAT))
                     return leftType;
                 if (leftType != rightType)
                     err("Error : Incompatible type left side and right side of assignment\n");
                 return leftType;
             }
-            /* printf("checking array\n"); */
+            
             CheckArray(root -> child[0] ->child[0], scope);
             Type leftType = typevar(scope, root -> child[0] -> child[0] -> child [0] -> child[0] -> label);
             if (leftType == TY_AIO || leftType == TY_AIT){
@@ -912,7 +867,7 @@ Type expressionTypeCheck(astNode* root, table* scope){
         else {
             Type left = expressionTypeCheck(root -> child[0], scope);
             Type right = expressionTypeCheck(root -> child[2], scope);
-            /* printf("left = %d right = %d %s\n", left, right, root -> child[2] -> child[0] -> child[0] -> label); */
+            
             if (left == TY_CHAR || right == TY_CHAR || left == TY_VOID || right == TY_VOID || left == TY_UNDEFINED || right == TY_UNDEFINED || 
                 left == TY_ACO || left == TY_ACT || left == TY_AIO || left == TY_AIT || left == TY_AFO || left == TY_AFT ||
                 right == TY_ACO || right == TY_ACT || right == TY_AIO || right == TY_AIT || right == TY_AFO || right == TY_AFT){
@@ -930,7 +885,7 @@ Type expressionTypeCheck(astNode* root, table* scope){
 void init_dec_type(astNode* root, table* scope, Type type) {
     if(strcmp(root-> label , ".init_dec") == 0 && root->childCnt > 1) {
         Type exprType = expressionTypeCheck(root -> child[2], scope);
-        /* printf("Type for declaration = %d and type being checked %d\n", exprType, type); */
+        
         if(exprType == TY_VOID || exprType == TY_UNDEFINED)
             err("Error : incompatible types void/undefined in declaration");
         if(exprType == TY_ACO || exprType == TY_ACT || exprType == TY_AIO || exprType == TY_AIT || exprType == TY_AFO || exprType == TY_AFT)
@@ -947,14 +902,12 @@ void init_dec_type(astNode* root, table* scope, Type type) {
 
 void declarationTypeCheck(astNode* root, table* scope) {
     Type type = root->child[0]->type;
-    /* printf("Type to check = %d\n", type); */
     init_dec_type(root, scope, type);
 }
 
 void returnTypeCheck(astNode* root, table* scope) {
-    /* printf("func type global = %d\n", funcTypeGlobal); */
     astNode* expr = root -> child[1];
-    /* printf("id = %s %d\n", expr->label, expr->childCnt); */
+    
     if(expr -> childCnt == 1) {
         if(funcTypeGlobal != TY_VOID)
             err("Error : function is not void, should return something\n");
@@ -978,21 +931,17 @@ void TypeCheck(astNode* root, table* scope) {
         funcTypeGlobal = TY_INT;
 
     if(strcmp(root->label, ".compound_stmt") == 0 && root->childCnt > 2) {
-        /* printf("compound\n"); */
         table* child = nextScope(scope);
-        /* printTable(child); */
         TypeCheck(root->child[1], child);
         return;
     }
 
    if(strcmp(root->label, ".declaration") == 0) {
-        /* printf("dec\n"); */
         declarationTypeCheck(root,  scope);
         return;
     }
 
     if(strcmp(root->label, ".expression_stmt") == 0) {
-        /* printf("expr\n"); */
         expressionTypeCheck(root, scope);
         return;
     }
@@ -1008,11 +957,8 @@ void TypeCheck(astNode* root, table* scope) {
         return;
     }
 
-    if(strcmp(root->label, ".for_stmt") == 0) {
-        /* printf("for_stmt\n"); */
-        /* printTable(cur_scope); */
+    if(strcmp(root->label, "for_stmt") == 0) {
         table* child = nextScope(scope);
-        /* printTable(child); */
         for(int i = 0 ; i < root->childCnt ; i++)
             TypeCheck(root->child[i], child);
         return;
@@ -1021,7 +967,6 @@ void TypeCheck(astNode* root, table* scope) {
     for(int i = 0 ; i < root->childCnt ; i++)
         TypeCheck(root->child[i], scope);
 }
-
 
 int main() {
     cur_table = createTable();
